@@ -1,0 +1,24 @@
+import { MetadataRoute } from 'next';
+
+export default function sitemap(): MetadataRoute.Sitemap {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://eswari-sound-system-q6l5.vercel.app';
+  const currentDate = new Date();
+
+  const routes = [
+    '',
+    '/about',
+    '/packages',
+    '/gallery',
+    '/book',
+    '/inquiry',
+    '/contact',
+    '/my-bookings',
+  ];
+
+  return routes.map((route) => ({
+    url: `${siteUrl}${route}`,
+    lastModified: currentDate,
+    changeFrequency: route === '' || route === '/gallery' ? 'daily' : 'weekly',
+    priority: route === '' ? 1.0 : route === '/book' || route === '/packages' ? 0.9 : 0.7,
+  }));
+}
