@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { bookingSchema } from '@/lib/validations';
 import { isDateBlocked } from '@/lib/db';
+import { sendAdminNewBookingAlert } from '@/lib/email';
 
 export const dynamic = 'force-dynamic';
 
@@ -74,6 +75,16 @@ export async function POST(request: NextRequest) {
         package: true,
       },
     });
+
+    // Notify staff/admin immediately so they can call customer to confirm
+    sendAdminNewBookingAlert({
+      customerName: booking.customerName,
+      customerPhone: booking.customerPhone,
+      packageName: pkg.name,
+      eventDate: booking.eventDate.toISOString().split('T')[0],
+      venueAddress: booking.venueAddress,
+      bookingId: booking.id,
+    }).catch((err) => console.warn('Admin alert email error:', err));
 
     return NextResponse.json(
       {

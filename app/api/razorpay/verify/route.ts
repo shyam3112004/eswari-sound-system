@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { verifyPaymentSignature } from '@/lib/razorpay';
+import { sendBookingReceiptEmail } from '@/lib/email';
 
 export const dynamic = 'force-dynamic';
 
@@ -72,6 +73,19 @@ export async function POST(request: NextRequest) {
         reason: `Confirmed Booking #${booking.id} (${booking.customerName})`,
       },
     });
+
+    // 3. Send official booking confirmation email receipt asynchronously
+    sendBookingReceiptEmail({
+      customerName: updatedBooking.customerName,
+      customerEmail: updatedBooking.customerEmail,
+      bookingId: updatedBooking.id,
+      packageName: updatedBooking.package.name,
+      eventDate: updatedBooking.eventDate.toISOString().split('T')[0],
+      venueAddress: updatedBooking.venueAddress,
+      totalAmount: updatedBooking.totalAmount,
+      advanceAmount: updatedBooking.advanceAmount,
+      balanceAmount: updatedBooking.balanceAmount,
+    }).catch((err) => console.warn('Receipt email dispatch error:', err));
 
     return NextResponse.json({
       success: true,

@@ -217,7 +217,7 @@ function BookingFlow() {
           </Link>
 
           <a
-            href={`https://wa.me/919876543210?text=${encodeURIComponent(
+            href={`https://wa.me/${process.env.NEXT_PUBLIC_WA_NUMBER || '919876543210'}?text=${encodeURIComponent(
               `Hi Eswari Sound System, I just placed booking request #${bookingSuccess.id.slice(0, 8)} for ${bookingSuccess.packageName} on ${bookingSuccess.eventDate}. Please confirm my event details.`
             )}`}
             target="_blank"

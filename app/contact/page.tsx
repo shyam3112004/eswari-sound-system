@@ -120,7 +120,7 @@ export default function ContactPage() {
 
             <div className="pt-2">
               <a
-                href="https://wa.me/919876543210?text=Hi%20Eswari%20Sound%20System,%20I%20would%20like%20to%20inquire%20about%20a%20stage%20sound%20rig."
+                href={`https://wa.me/${process.env.NEXT_PUBLIC_WA_NUMBER || '919876543210'}?text=Hi%20Eswari%20Sound%20System,%20I%20would%20like%20to%20inquire%20about%20a%20stage%20sound%20rig.`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full py-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs uppercase tracking-widest flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/30 transition-all"
