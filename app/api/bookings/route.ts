@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import { bookingSchema } from '@/lib/validations';
 import { isDateBlocked } from '@/lib/db';
 import { sendAdminNewBookingAlert } from '@/lib/email';
+import { createBookingSafe, getBookingByIdSafe } from '@/lib/bookingsStore';
 
 export const dynamic = 'force-dynamic';
 
@@ -37,51 +38,24 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 2. Fetch canonical package to calculate price server-side
-    const pkg = await prisma.package.findUnique({
-      where: { slug: data.packageSlug },
-    });
-
-    if (!pkg) {
-      return NextResponse.json(
-        { success: false, error: 'Selected package was not found in catalog.' },
-        { status: 404 }
-      );
-    }
-
-    // 3. Strict Server-Side Financial Calculations (25% advance rule)
-    const totalAmount = pkg.price;
-    const advanceAmount = Math.round(totalAmount * 0.25);
-    const balanceAmount = totalAmount - advanceAmount;
-
-    // 4. Create Draft Booking
-    const booking = await prisma.booking.create({
-      data: {
-        packageId: pkg.id,
-        customerName: data.customerName.trim(),
-        customerEmail: data.customerEmail.toLowerCase().trim(),
-        customerPhone: data.customerPhone.trim(),
-        eventDate,
-        venueAddress: data.venueAddress.trim(),
-        eventType: data.eventType?.trim() || 'Live Stage Production',
-        totalAmount,
-        advanceAmount,
-        balanceAmount,
-        status: 'PENDING',
-        paymentStatus: 'UNPAID',
-        notes: data.notes?.trim() || null,
-      },
-      include: {
-        package: true,
-      },
+    // 2. Create Draft Booking with resilient store & database fallback
+    const booking = await createBookingSafe({
+      packageSlug: data.packageSlug,
+      customerName: data.customerName,
+      customerEmail: data.customerEmail,
+      customerPhone: data.customerPhone,
+      eventDate,
+      venueAddress: data.venueAddress,
+      eventType: data.eventType,
+      notes: data.notes,
     });
 
     // Notify staff/admin immediately so they can call customer to confirm
     sendAdminNewBookingAlert({
       customerName: booking.customerName,
       customerPhone: booking.customerPhone,
-      packageName: pkg.name,
-      eventDate: booking.eventDate.toISOString().split('T')[0],
+      packageName: booking.package?.name || 'Sound System Rig',
+      eventDate: booking.eventDate instanceof Date ? booking.eventDate.toISOString().split('T')[0] : String(booking.eventDate).split('T')[0],
       venueAddress: booking.venueAddress,
       bookingId: booking.id,
     }).catch((err) => console.warn('Admin alert email error:', err));
@@ -95,10 +69,10 @@ export async function POST(request: NextRequest) {
           customerName: booking.customerName,
           customerEmail: booking.customerEmail,
           customerPhone: booking.customerPhone,
-          eventDate: booking.eventDate.toISOString().split('T')[0],
+          eventDate: booking.eventDate instanceof Date ? booking.eventDate.toISOString().split('T')[0] : String(booking.eventDate).split('T')[0],
           venueAddress: booking.venueAddress,
-          packageName: pkg.name,
-          packageSlug: pkg.slug,
+          packageName: booking.package?.name || 'Sound Rig Package',
+          packageSlug: booking.package?.slug || data.packageSlug,
           totalAmount: booking.totalAmount,
           advanceAmount: booking.advanceAmount,
           balanceAmount: booking.balanceAmount,
@@ -106,15 +80,15 @@ export async function POST(request: NextRequest) {
           paymentStatus: booking.paymentStatus,
           createdAt: booking.createdAt,
         },
-        advanceRequired: advanceAmount,
-        balanceDue: balanceAmount,
+        advanceRequired: booking.advanceAmount,
+        balanceDue: booking.balanceAmount,
       },
       { status: 201 }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error creating booking:', error);
     return NextResponse.json(
-      { success: false, error: 'Failed to create booking draft' },
+      { success: false, error: error.message || 'Failed to create booking draft' },
       { status: 500 }
     );
   }
@@ -128,10 +102,7 @@ export async function GET(request: NextRequest) {
     const email = searchParams.get('email');
 
     if (id) {
-      const booking = await prisma.booking.findUnique({
-        where: { id },
-        include: { package: true },
-      });
+      const booking = await getBookingByIdSafe(id);
 
       if (!booking) {
         return NextResponse.json(

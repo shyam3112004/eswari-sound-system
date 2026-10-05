@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { createPaymentOrder } from '@/lib/razorpay';
+import { getBookingByIdSafe, updateBookingStatusSafe } from '@/lib/bookingsStore';
 
 export const dynamic = 'force-dynamic';
 
@@ -16,10 +17,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const booking = await prisma.booking.findUnique({
-      where: { id: bookingId },
-      include: { package: true },
-    });
+    const booking = await getBookingByIdSafe(bookingId);
 
     if (!booking) {
       return NextResponse.json(
@@ -36,22 +34,24 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate Razorpay Order strictly using server-calculated advanceAmount
+    const eventDateStr = booking.eventDate instanceof Date
+      ? booking.eventDate.toISOString().split('T')[0]
+      : String(booking.eventDate).split('T')[0];
+    const pkgName = booking.package?.name || 'Sound Rig';
+
     const order = await createPaymentOrder({
       amountInPaise: booking.advanceAmount,
       receiptId: booking.id,
       notes: {
         customerName: booking.customerName,
         customerPhone: booking.customerPhone,
-        package: booking.package.name,
-        eventDate: booking.eventDate.toISOString().split('T')[0],
+        package: pkgName,
+        eventDate: eventDateStr,
       },
     });
 
     // Save generated order ID
-    await prisma.booking.update({
-      where: { id: booking.id },
-      data: { razorpayOrderId: order.id },
-    });
+    await updateBookingStatusSafe(booking.id, { razorpayOrderId: order.id });
 
     return NextResponse.json({
       success: true,
@@ -65,9 +65,9 @@ export async function POST(request: NextRequest) {
         customerName: booking.customerName,
         customerEmail: booking.customerEmail,
         customerPhone: booking.customerPhone,
-        eventDate: booking.eventDate.toISOString().split('T')[0],
+        eventDate: eventDateStr,
         venueAddress: booking.venueAddress,
-        packageName: booking.package.name,
+        packageName: pkgName,
         totalAmount: booking.totalAmount,
         advanceAmount: booking.advanceAmount,
         balanceAmount: booking.balanceAmount,

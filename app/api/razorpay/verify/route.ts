@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { verifyPaymentSignature } from '@/lib/razorpay';
 import { sendBookingReceiptEmail } from '@/lib/email';
+import { getBookingByIdSafe, updateBookingStatusSafe } from '@/lib/bookingsStore';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,10 +23,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const booking = await prisma.booking.findUnique({
-      where: { id: bookingId },
-      include: { package: true },
-    });
+    const booking = await getBookingByIdSafe(bookingId);
 
     if (!booking) {
       return NextResponse.json(
@@ -49,38 +47,44 @@ export async function POST(request: NextRequest) {
     }
 
     // 1. Update Booking status to CONFIRMED and paymentStatus to ADVANCE_PAID
-    const updatedBooking = await prisma.booking.update({
-      where: { id: booking.id },
-      data: {
-        status: 'CONFIRMED',
-        paymentStatus: 'ADVANCE_PAID',
-        razorpayOrderId: razorpay_order_id,
-        razorpayPaymentId: razorpay_payment_id,
-      },
-      include: { package: true },
+    const updatedBooking = await updateBookingStatusSafe(booking.id, {
+      status: 'CONFIRMED',
+      paymentStatus: 'ADVANCE_PAID',
+      razorpayOrderId: razorpay_order_id,
+      razorpayPaymentId: razorpay_payment_id,
     });
 
-    // 2. Lock the date permanently in Availability to prevent double-booking
-    await prisma.availability.upsert({
-      where: { date: booking.eventDate },
-      update: {
-        isBlocked: true,
-        reason: `Confirmed Booking #${booking.id} (${booking.customerName})`,
-      },
-      create: {
-        date: booking.eventDate,
-        isBlocked: true,
-        reason: `Confirmed Booking #${booking.id} (${booking.customerName})`,
-      },
-    });
+    // 2. Lock the date in Availability if db is alive
+    try {
+      const eventDateObj = booking.eventDate instanceof Date ? booking.eventDate : new Date(booking.eventDate);
+      await prisma.availability.upsert({
+        where: { date: eventDateObj },
+        update: {
+          isBlocked: true,
+          reason: `Confirmed Booking #${booking.id} (${booking.customerName})`,
+        },
+        create: {
+          date: eventDateObj,
+          isBlocked: true,
+          reason: `Confirmed Booking #${booking.id} (${booking.customerName})`,
+        },
+      });
+    } catch (availErr) {
+      console.warn('Prisma availability lock fallback:', availErr);
+    }
+
+    const eventDateStr = updatedBooking.eventDate instanceof Date
+      ? updatedBooking.eventDate.toISOString().split('T')[0]
+      : String(updatedBooking.eventDate).split('T')[0];
+    const pkgName = updatedBooking.package?.name || 'Sound Rig';
 
     // 3. Send official booking confirmation email receipt asynchronously
     sendBookingReceiptEmail({
       customerName: updatedBooking.customerName,
       customerEmail: updatedBooking.customerEmail,
       bookingId: updatedBooking.id,
-      packageName: updatedBooking.package.name,
-      eventDate: updatedBooking.eventDate.toISOString().split('T')[0],
+      packageName: pkgName,
+      eventDate: eventDateStr,
       venueAddress: updatedBooking.venueAddress,
       totalAmount: updatedBooking.totalAmount,
       advanceAmount: updatedBooking.advanceAmount,
@@ -95,9 +99,9 @@ export async function POST(request: NextRequest) {
         customerName: updatedBooking.customerName,
         customerEmail: updatedBooking.customerEmail,
         customerPhone: updatedBooking.customerPhone,
-        eventDate: updatedBooking.eventDate.toISOString().split('T')[0],
+        eventDate: eventDateStr,
         venueAddress: updatedBooking.venueAddress,
-        packageName: updatedBooking.package.name,
+        packageName: pkgName,
         totalAmount: updatedBooking.totalAmount,
         advanceAmount: updatedBooking.advanceAmount,
         balanceAmount: updatedBooking.balanceAmount,
@@ -114,3 +118,4 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+

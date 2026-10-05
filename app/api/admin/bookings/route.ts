@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { verifySession, ADMIN_COOKIE_NAME } from '@/lib/auth';
+import { getAllBookingsSafe, updateBookingStatusSafe } from '@/lib/bookingsStore';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,10 +12,7 @@ export async function GET(request: NextRequest) {
     if (!valid) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
     }
-    const bookings = await prisma.booking.findMany({
-      include: { package: true },
-      orderBy: { eventDate: 'asc' },
-    });
+    const bookings = await getAllBookingsSafe();
     return NextResponse.json({ success: true, bookings });
   } catch (error) {
     console.error('Fetch admin bookings error:', error);
@@ -42,25 +40,22 @@ export async function PATCH(request: NextRequest) {
     if (paymentStatus) dataToUpdate.paymentStatus = paymentStatus;
     if (notes !== undefined) dataToUpdate.notes = notes;
 
-    const updated = await prisma.booking.update({
-      where: { id: bookingId },
-      data: dataToUpdate,
-      include: { package: true },
-    });
+    const updated = await updateBookingStatusSafe(bookingId, dataToUpdate);
 
     // If advance is marked paid, ensure the date is blocked in availability
     if (paymentStatus === 'ADVANCE_PAID' || status === 'CONFIRMED') {
       try {
+        const dateObj = updated.eventDate instanceof Date ? updated.eventDate : new Date(updated.eventDate);
         await prisma.availability.upsert({
-          where: { date: updated.eventDate },
+          where: { date: dateObj },
           update: {
             isBlocked: true,
-            reason: `Booked: ${updated.customerName} (${updated.package.name})`,
+            reason: `Booked: ${updated.customerName} (${updated.package?.name || 'Sound Package'})`,
           },
           create: {
-            date: updated.eventDate,
+            date: dateObj,
             isBlocked: true,
-            reason: `Booked: ${updated.customerName} (${updated.package.name})`,
+            reason: `Booked: ${updated.customerName} (${updated.package?.name || 'Sound Package'})`,
           },
         });
       } catch (availErr) {
@@ -78,4 +73,5 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ success: false, error: 'Failed to update booking' }, { status: 500 });
   }
 }
+
 
