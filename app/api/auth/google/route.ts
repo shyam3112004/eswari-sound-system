@@ -88,11 +88,12 @@ export async function POST(request: NextRequest) {
     });
 
     return response;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Google login error:', error);
     return NextResponse.json(
-      { success: false, error: 'Google authentication failed' },
+      { success: false, error: error?.message || 'Google authentication failed' },
       { status: 500 }
     );
   }
+
 }
