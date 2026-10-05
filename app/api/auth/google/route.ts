@@ -55,15 +55,15 @@ export async function POST(request: NextRequest) {
 
     const cleanEmail = userEmail.toLowerCase().trim();
     const cleanName = userName.trim();
-    const configuredAdminEmail = (process.env.ADMIN_EMAIL || 'admin@eswarisound.com').toLowerCase().trim();
-    const isAdmin = cleanEmail === configuredAdminEmail;
 
+    // Google Login is STRICTLY for customer booking & receipts.
+    // Admin console MUST strictly require entering the master password at /admin/login.
     const sessionPayload: Omit<UserSession, 'expiresAt'> = {
       id: userId || `usr_${Date.now()}`,
       email: cleanEmail,
       name: cleanName,
       picture: userPicture,
-      role: isAdmin ? 'admin' : 'customer',
+      role: 'customer',
     };
 
     const token = signUserSession(sessionPayload);
@@ -73,9 +73,10 @@ export async function POST(request: NextRequest) {
       message: 'Google authentication successful',
       user: {
         ...sessionPayload,
-        isAdmin,
+        isAdmin: false,
       },
     });
+
 
     response.cookies.set({
       name: USER_COOKIE_NAME,

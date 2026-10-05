@@ -112,11 +112,6 @@ export function AuthButton() {
               <div className="px-3 py-2 border-b border-white/10 space-y-0.5">
                 <div className="font-bold text-white truncate">{user.name}</div>
                 <div className="text-[11px] font-mono text-neutral-400 truncate">{user.email}</div>
-                {user.isAdmin && (
-                  <span className="inline-block mt-1 px-2 py-0.5 rounded text-[10px] font-mono uppercase bg-amber text-ink font-bold">
-                    Admin Access
-                  </span>
-                )}
               </div>
 
               <div className="py-1">
@@ -137,17 +132,6 @@ export function AuthButton() {
                   <Sparkles className="w-3.5 h-3.5 text-amber" />
                   <span>Book Stage Rig</span>
                 </Link>
-
-                {user.isAdmin && (
-                  <Link
-                    href="/admin"
-                    onClick={() => setDropdownOpen(false)}
-                    className="w-full px-3 py-2 rounded-xl text-amber hover:bg-amber/10 flex items-center gap-2.5 transition-colors font-semibold font-mono"
-                  >
-                    <Film className="w-3.5 h-3.5" />
-                    <span>Admin Operations</span>
-                  </Link>
-                )}
               </div>
 
               <div className="pt-1 border-t border-white/10">

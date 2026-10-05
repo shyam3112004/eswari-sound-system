@@ -14,7 +14,6 @@ export async function GET(request: NextRequest) {
   if (userToken) {
     const { valid, session } = verifyUserSession(userToken);
     if (valid && session) {
-      const configuredAdmin = (process.env.ADMIN_EMAIL || 'admin@eswarisound.com').toLowerCase().trim();
       return NextResponse.json({
         authenticated: true,
         user: {
@@ -22,10 +21,11 @@ export async function GET(request: NextRequest) {
           name: session.name,
           email: session.email,
           picture: session.picture,
-          role: session.role,
-          isAdmin: session.role === 'admin' || session.email.toLowerCase() === configuredAdmin,
+          role: 'customer',
+          isAdmin: false,
         },
       });
+
     }
   }
 
