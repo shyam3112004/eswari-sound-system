@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { getAllBookingsSafe } from '@/lib/bookingsStore';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,29 +19,26 @@ export async function GET(request: NextRequest) {
     }
 
     const isEmail = query.includes('@');
-    const whereCondition = isEmail
-      ? { customerEmail: query.toLowerCase() }
-      : { customerPhone: query.replace(/\D/g, '') };
+    const cleanPhone = query.replace(/\D/g, '');
+    const cleanEmail = query.toLowerCase();
 
-    const bookings = await prisma.booking.findMany({
-      where: whereCondition,
-      include: {
-        package: true,
-      },
-      orderBy: {
-        eventDate: 'desc',
-      },
+    const allBookings = await getAllBookingsSafe();
+    const matching = allBookings.filter((b: any) => {
+      if (isEmail) {
+        return b.customerEmail?.toLowerCase() === cleanEmail;
+      }
+      return b.customerPhone?.replace(/\D/g, '') === cleanPhone;
     });
 
-    const sanitizedBookings = bookings.map((b) => ({
+    const sanitizedBookings = matching.map((b: any) => ({
       id: b.id,
       customerName: b.customerName,
       customerPhone: b.customerPhone,
       customerEmail: b.customerEmail,
-      eventDate: b.eventDate.toISOString().split('T')[0],
+      eventDate: b.eventDate instanceof Date ? b.eventDate.toISOString().split('T')[0] : String(b.eventDate).split('T')[0],
       venueAddress: b.venueAddress,
-      packageName: b.package.name,
-      packageCategory: b.package.category,
+      packageName: b.package?.name || 'Sound Package',
+      packageCategory: b.package?.category || 'combo',
       totalAmount: b.totalAmount,
       advanceAmount: b.advanceAmount,
       balanceAmount: b.balanceAmount,
@@ -63,3 +60,4 @@ export async function GET(request: NextRequest) {
     );
   }
 }
+
