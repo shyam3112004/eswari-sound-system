@@ -42,10 +42,8 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
         if (data.success) {
           onSuccess(data.user);
           onClose();
-          router.push('/');
-          router.refresh();
+          window.location.href = '/';
         } else {
-
           setError(data.error || 'Google login failed');
         }
       } catch (err: any) {
@@ -92,12 +90,10 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
       if (data.success) {
         onSuccess(data.user);
         onClose();
-        router.push('/');
-        router.refresh();
+        window.location.href = '/';
       } else {
         setError(data.error || 'Sign in failed');
       }
-
     } catch (err: any) {
       setError(err.message || 'Connection error');
     } finally {
@@ -123,7 +119,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
             <Sparkles className="w-6 h-6 text-amber" />
           </div>
           <h3 className="font-heading text-2xl font-bold text-white tracking-tight">
-            Sign In with Google
+            Sign In / Sign Up
           </h3>
           <p className="text-xs text-neutral-300 leading-relaxed">
             Access your stage booking history, download tax invoices, and track your sound crew live.
@@ -221,7 +217,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
                 </>
               ) : (
                 <>
-                  <span>Sign In with this Gmail</span>
+                  <span>Sign In / Sign Up with this Gmail</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </>
               )}
