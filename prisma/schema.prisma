@@ -1,0 +1,98 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Package {
+  id          String   @id @default(uuid())
+  slug        String   @unique
+  name        String
+  category    String   // e.g. "audio", "lighting", "combo"
+  description String
+  features    String   // JSON array of features
+  price       Int      // in paise (₹)
+  image       String?  // image path or URL
+  isPopular   Boolean  @default(false)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  bookings Booking[]
+}
+
+model Booking {
+  id                String   @id @default(uuid())
+  packageId         String
+  package           Package  @relation(fields: [packageId], references: [id])
+
+  customerName      String
+  customerEmail     String
+  customerPhone     String
+
+  eventDate         DateTime
+  venueAddress      String
+  eventType         String?  // wedding, corporate, etc.
+
+  status            String   @default("PENDING")      // PENDING, CONFIRMED, COMPLETED, CANCELLED
+  paymentStatus     String   @default("UNPAID")       // UNPAID, ADVANCE_PAID, FULLY_PAID
+
+  totalAmount       Int      // in paise
+  advanceAmount     Int      // 25% of total
+  balanceAmount     Int      // remaining 75%
+
+  razorpayOrderId   String?
+  razorpayPaymentId String?
+
+  notes             String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model Inquiry {
+  id           String    @id @default(uuid())
+  name         String
+  email        String
+  phone        String
+  eventType    String?
+  eventDate    DateTime?
+  venue        String?
+  message      String
+
+  status       String    @default("NEW")          // NEW, QUOTED, ACCEPTED, DECLINED
+  quoteAmount  Int?      // in paise
+  quoteDetails String?
+  adminNotes   String?
+
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model Availability {
+  id        String   @id @default(uuid())
+  date      DateTime @unique
+  isBlocked Boolean  @default(true)
+  reason    String?  // e.g. "booked", "maintenance", "holiday"
+  createdAt DateTime @default(now())
+}
+
+model PortfolioItem {
+  id           String    @id @default(uuid())
+  title        String
+  category     String    // concert, wedding, college, corporate, temple
+  location     String
+  crowd        String?   // e.g. "8,000+ Attendees"
+  specs        String?   // e.g. "16-Box Flown Line Array, 24 Moving Heads"
+  tag          String?   // e.g. "Arena Concert"
+  mediaType    String    @default("image") // "image" or "video"
+  mediaUrl     String    // path to uploaded file or URL
+  thumbnailUrl String?   // optional thumbnail for videos
+  eventDate    DateTime?
+  sortOrder    Int       @default(0)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
