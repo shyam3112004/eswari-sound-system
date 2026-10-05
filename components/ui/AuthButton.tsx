@@ -42,11 +42,13 @@ export function AuthButton() {
       await fetch('/api/auth/logout', { method: 'POST' });
       setUser(null);
       setDropdownOpen(false);
+      router.push('/');
       router.refresh();
     } catch (err) {
       console.error('Logout error:', err);
     }
   };
+
 
   if (loading) {
     return (
@@ -154,8 +156,10 @@ export function AuthButton() {
         onClose={() => setModalOpen(false)}
         onSuccess={(loggedUser) => {
           setUser(loggedUser);
+          router.push('/');
           router.refresh();
         }}
+
       />
     </>
   );

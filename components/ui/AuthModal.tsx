@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { X, ShieldCheck, Mail, ArrowRight, Loader2, Sparkles } from 'lucide-react';
 
 interface AuthModalProps {
@@ -10,6 +11,7 @@ interface AuthModalProps {
 }
 
 export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
@@ -40,7 +42,10 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
         if (data.success) {
           onSuccess(data.user);
           onClose();
+          router.push('/');
+          router.refresh();
         } else {
+
           setError(data.error || 'Google login failed');
         }
       } catch (err: any) {
@@ -87,9 +92,12 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
       if (data.success) {
         onSuccess(data.user);
         onClose();
+        router.push('/');
+        router.refresh();
       } else {
         setError(data.error || 'Sign in failed');
       }
+
     } catch (err: any) {
       setError(err.message || 'Connection error');
     } finally {
