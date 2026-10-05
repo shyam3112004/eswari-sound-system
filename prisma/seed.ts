@@ -3,13 +3,13 @@ import { PrismaClient } from '@prisma/client';
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('Seeding database...');
+  console.log('Checking database seed...');
 
-  // Clean existing seed data in correct foreign key order
-  await prisma.booking.deleteMany();
-  await prisma.inquiry.deleteMany();
-  await prisma.availability.deleteMany();
-  await prisma.package.deleteMany();
+  const packageCount = await prisma.package.count();
+  if (packageCount > 0) {
+    console.log('Database already has packages. Skipping seed.');
+    return;
+  }
 
   const packages = [
     {

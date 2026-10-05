@@ -5,7 +5,7 @@
   "description": "Eswari Sound System — scroll-cinematic event production website. Single provider. Hybrid booking: instant 25% advance + inquiry→quote→pay.",
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && next build",
+    "build": "prisma generate && (prisma db push --accept-data-loss || true) && (tsx prisma/seed.ts || true) && next build",
     "start": "next start",
     "lint": "next lint",
     "db:generate": "prisma generate",
@@ -28,7 +28,8 @@
     "resend": "^4.0.0",
     "clsx": "^2.1.1",
     "tailwind-merge": "^2.4.0",
-    "lucide-react": "^0.400.0"
+    "lucide-react": "^0.400.0",
+    "tsx": "^4.11.0"
   },
   "devDependencies": {
     "typescript": "^5.5.0",
@@ -36,7 +37,6 @@
     "@types/react": "^18.3.0",
     "@types/react-dom": "^18.3.0",
     "prisma": "^5.14.0",
-    "tsx": "^4.11.0",
     "tailwindcss": "^3.4.4",
     "postcss": "^8.4.38",
     "autoprefixer": "^10.4.19",
