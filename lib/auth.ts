@@ -87,16 +87,24 @@ export function verifySession(token: string | undefined | null): {
 }
 
 /**
+ * Checks if an email is a registered administrative email
+ */
+export function isAdminEmail(email: string): boolean {
+  const configuredEmail = (process.env.ADMIN_EMAIL || 'admin@eswarisound.com').toLowerCase().trim();
+  const clean = email.toLowerCase().trim();
+  return (
+    clean === configuredEmail ||
+    clean === 'admin@eswarisound.com' ||
+    clean === '3112004shyam@gmail.com'
+  );
+}
+
+/**
  * Validates admin credentials against environment variables
  */
 export function checkAdminCredentials(email: string, pass: string): boolean {
-  const configuredEmail = process.env.ADMIN_EMAIL || 'admin@eswarisound.com';
-  const configuredPassword = process.env.ADMIN_PASSWORD || 'eswari-live-2026';
-
-  const isEmailMatch = email.toLowerCase().trim() === configuredEmail.toLowerCase().trim();
-  const isPassMatch = pass.trim() === configuredPassword.trim();
-
-  return isEmailMatch && isPassMatch;
+  const configuredPassword = (process.env.ADMIN_PASSWORD || 'eswari-live-2026').trim();
+  return isAdminEmail(email) && pass.trim() === configuredPassword;
 }
 
 /**

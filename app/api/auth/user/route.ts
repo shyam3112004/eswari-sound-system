@@ -9,7 +9,25 @@ import {
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
-  // 1. Check User/Customer Cookie
+  // 1. Check Admin Cookie (authenticated via master password)
+  const adminToken = request.cookies.get(ADMIN_COOKIE_NAME)?.value;
+  if (adminToken) {
+    const { valid, session } = verifySession(adminToken);
+    if (valid && session) {
+      return NextResponse.json({
+        authenticated: true,
+        user: {
+          id: 'admin_master',
+          name: 'Sound Master Admin',
+          email: session.email,
+          role: 'admin',
+          isAdmin: true,
+        },
+      });
+    }
+  }
+
+  // 2. Check User/Customer Cookie
   const userToken = request.cookies.get(USER_COOKIE_NAME)?.value;
   if (userToken) {
     const { valid, session } = verifyUserSession(userToken);
@@ -23,25 +41,6 @@ export async function GET(request: NextRequest) {
           picture: session.picture,
           role: 'customer',
           isAdmin: false,
-        },
-      });
-
-    }
-  }
-
-  // 2. Check Admin Cookie fallback
-  const adminToken = request.cookies.get(ADMIN_COOKIE_NAME)?.value;
-  if (adminToken) {
-    const { valid, session } = verifySession(adminToken);
-    if (valid && session) {
-      return NextResponse.json({
-        authenticated: true,
-        user: {
-          id: 'admin_master',
-          name: 'Sound Master Admin',
-          email: session.email,
-          role: 'admin',
-          isAdmin: true,
         },
       });
     }
