@@ -56,6 +56,16 @@ function MyBookingsContent() {
   useEffect(() => {
     if (initialQuery) {
       performSearch(initialQuery);
+    } else {
+      fetch('/api/auth/user')
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.authenticated && data.user?.email) {
+            setQuery(data.user.email);
+            performSearch(data.user.email);
+          }
+        })
+        .catch(() => {});
     }
   }, [initialQuery]);
 

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Volume2, Menu, X, Calendar, Phone, Sparkles, Film, ShieldCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { AuthButton } from './AuthButton';
 
 export function Navbar() {
   const pathname = usePathname();
@@ -103,6 +104,8 @@ export function Navbar() {
               <Phone className="w-3.5 h-3.5 text-amber" />
               <span>+91 98765 43210</span>
             </a>
+
+            <AuthButton />
             
             <Link
               href="/book"
@@ -115,6 +118,8 @@ export function Navbar() {
 
           {/* Mobile menu trigger */}
           <div className="flex md:hidden items-center gap-2">
+            <AuthButton />
+
             {isAdmin && (
               <Link
                 href="/admin?tab=portfolio"
@@ -137,6 +142,7 @@ export function Navbar() {
               {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
           </div>
+
         </div>
       </div>
 

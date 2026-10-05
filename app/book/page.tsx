@@ -61,6 +61,19 @@ function BookingFlow() {
       })
       .catch((err) => console.error(err))
       .finally(() => setLoadingPackages(false));
+
+    fetch('/api/auth/user')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.authenticated && data.user) {
+          setFormData((prev) => ({
+            ...prev,
+            customerName: prev.customerName || data.user.name || '',
+            customerEmail: prev.customerEmail || data.user.email || '',
+          }));
+        }
+      })
+      .catch(() => {});
   }, []);
 
   // Update selected package if URL param changes
