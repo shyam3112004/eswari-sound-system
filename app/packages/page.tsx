@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
   Volume2,
   Zap,
@@ -23,6 +23,7 @@ import {
   Wind,
   Battery,
   X,
+  Loader2,
 } from 'lucide-react';
 import { formatINR } from '@/lib/utils';
 
@@ -42,28 +43,34 @@ const CATEGORY_COLORS: Record<string, string> = {
   power: 'text-emerald-400',
 };
 
-export default function PackagesPage() {
+function PackagesContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const tabParam = searchParams.get('tab');
+
   const [packages, setPackages] = useState<any[]>([]);
   const [materials, setMaterials] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [materialsLoading, setMaterialsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'packages' | 'materials'>('packages');
+  const [activeTab, setActiveTab] = useState<'packages' | 'materials'>(
+    tabParam === 'materials' ? 'materials' : 'packages'
+  );
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [materialsCategoryFilter, setMaterialsCategoryFilter] = useState<string>('all');
 
   // Materials rental state: { [materialId]: quantity }
   const [cart, setCart] = useState<Record<string, number>>({});
 
+  // Sync tab with URL search parameter reactively
   useEffect(() => {
-    // Check if URL has ?tab=materials
-    if (typeof window !== 'undefined') {
-      const params = new URLSearchParams(window.location.search);
-      if (params.get('tab') === 'materials') {
-        setActiveTab('materials');
-      }
+    if (tabParam === 'materials') {
+      setActiveTab('materials');
+    } else if (tabParam === 'packages' || (!tabParam && activeTab !== 'materials')) {
+      setActiveTab('packages');
     }
+  }, [tabParam]);
 
+  useEffect(() => {
     fetch('/api/packages')
       .then((res) => res.json())
       .then((data) => {
@@ -83,6 +90,7 @@ export default function PackagesPage() {
 
   const packageCategories = [
     { id: 'all', label: 'All Event Rigs' },
+    { id: 'materials-rent', label: '📦 Rent Materials by Item' },
     { id: 'custom', label: '🛠️ Custom Packages' },
     { id: 'audio', label: 'Audio Only' },
     { id: 'lighting', label: 'Stage Lighting' },
@@ -172,40 +180,76 @@ export default function PackagesPage() {
         </p>
 
         {/* Main Tab Switch: Packages / Materials Rent */}
-        <div className="flex items-center justify-center gap-3 pt-4">
-          <button
-            onClick={() => setActiveTab('packages')}
-            className={`flex items-center gap-2 px-6 py-2.5 rounded-full text-xs font-mono uppercase tracking-wider transition-all duration-200 ${
-              activeTab === 'packages'
-                ? 'bg-amber text-ink font-bold shadow-lg shadow-amber/25'
-                : 'text-neutral-400 hover:text-white border border-white/10 hover:bg-white/5'
-            }`}
-          >
-            <Layers className="w-3.5 h-3.5" />
-            <span>Full Stage Packages</span>
-          </button>
-          <button
-            onClick={() => setActiveTab('materials')}
-            className={`flex items-center gap-2 px-6 py-2.5 rounded-full text-xs font-mono uppercase tracking-wider transition-all duration-200 ${
-              activeTab === 'materials'
-                ? 'bg-amber text-ink font-bold shadow-lg shadow-amber/25'
-                : 'text-neutral-400 hover:text-white border border-white/10 hover:bg-white/5'
-            }`}
-          >
-            <Package className="w-3.5 h-3.5" />
-            <span>Materials Rent</span>
-            {cartItemCount > 0 && (
-              <span className="w-5 h-5 rounded-full bg-ink text-amber border border-amber text-[10px] font-bold flex items-center justify-center">
-                {cartItemCount}
-              </span>
-            )}
-          </button>
+        <div className="flex justify-center pt-4 pb-2">
+          <div className="inline-flex p-1.5 rounded-full bg-black/80 border-2 border-amber/40 shadow-2xl shadow-amber/20 backdrop-blur-xl">
+            <button
+              id="tab-btn-packages"
+              onClick={() => {
+                setActiveTab('packages');
+                router.replace('/packages', { scroll: false });
+              }}
+              className={`flex items-center gap-2.5 px-6 sm:px-8 py-3 rounded-full text-xs sm:text-sm font-heading uppercase tracking-wider font-extrabold transition-all duration-300 ${
+                activeTab === 'packages'
+                  ? 'bg-amber text-ink shadow-lg shadow-amber/30 scale-100'
+                  : 'text-neutral-400 hover:text-white hover:bg-white/10'
+              }`}
+            >
+              <Layers className="w-4 h-4" />
+              <span>Full Stage Packages</span>
+            </button>
+            <button
+              id="tab-btn-materials"
+              onClick={() => {
+                setActiveTab('materials');
+                router.replace('/packages?tab=materials', { scroll: false });
+              }}
+              className={`flex items-center gap-2.5 px-6 sm:px-8 py-3 rounded-full text-xs sm:text-sm font-heading uppercase tracking-wider font-extrabold transition-all duration-300 ${
+                activeTab === 'materials'
+                  ? 'bg-amber text-ink shadow-lg shadow-amber/30 scale-100'
+                  : 'text-neutral-400 hover:text-white hover:bg-white/10'
+              }`}
+            >
+              <Package className="w-4 h-4" />
+              <span>📦 Materials Rent</span>
+              {cartItemCount > 0 && (
+                <span className="px-2 py-0.5 rounded-full bg-ink text-amber text-xs font-mono font-bold">
+                  {cartItemCount}
+                </span>
+              )}
+            </button>
+          </div>
         </div>
       </div>
 
       {/* ─── TAB: FULL PACKAGES ─── */}
       {activeTab === 'packages' && (
         <>
+          {/* Quick Switch Callout Banner */}
+          <div className="mb-8 p-4 sm:p-5 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-amber text-ink flex items-center justify-center font-bold shrink-0">
+                <Package className="w-5 h-5" />
+              </div>
+              <div className="space-y-0.5 text-left">
+                <h4 className="font-heading text-sm font-bold text-white">
+                  Looking to rent individual sound, light, or stage gear?
+                </h4>
+                <p className="text-xs text-neutral-300">
+                  Select line arrays, subwoofers, moving heads, trussing, silent generators, and fog units a-la-carte.
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => {
+                setActiveTab('materials');
+                router.replace('/packages?tab=materials', { scroll: false });
+              }}
+              className="px-5 py-2.5 rounded-full bg-amber text-ink font-bold text-xs uppercase tracking-wider shrink-0 hover:brightness-110 shadow-lg shadow-amber/20"
+            >
+              Browse Materials Rent Catalog →
+            </button>
+          </div>
+
           {/* Category Filter Links */}
           <div className="flex flex-wrap items-center justify-center gap-3 mb-16">
             {packageCategories.map((c) => {
@@ -213,9 +257,18 @@ export default function PackagesPage() {
               return (
                 <button
                   key={c.id}
-                  onClick={() => setActiveCategory(c.id)}
+                  onClick={() => {
+                    if (c.id === 'materials-rent') {
+                      setActiveTab('materials');
+                      router.replace('/packages?tab=materials', { scroll: false });
+                    } else {
+                      setActiveCategory(c.id);
+                    }
+                  }}
                   className={`px-5 py-2 rounded-full text-xs font-mono uppercase tracking-wider transition-all duration-200 ${
-                    isActive
+                    c.id === 'materials-rent'
+                      ? 'bg-amber/20 text-amber hover:bg-amber hover:text-ink font-bold border border-amber/40 shadow-sm'
+                      : isActive
                       ? 'bg-amber text-ink font-bold shadow-lg shadow-amber/25'
                       : 'text-neutral-400 hover:text-white hover:bg-white/5 border border-transparent'
                   }`}
@@ -676,5 +729,20 @@ export default function PackagesPage() {
         </Link>
       </div>
     </div>
+  );
+}
+
+export default function PackagesPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center text-amber font-mono text-xs gap-2">
+          <Loader2 className="w-5 h-5 animate-spin" />
+          <span>Loading Production Catalog...</span>
+        </div>
+      }
+    >
+      <PackagesContent />
+    </Suspense>
   );
 }

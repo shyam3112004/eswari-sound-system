@@ -24,7 +24,7 @@ export function Navbar() {
     { href: '/', label: 'Experience' },
     { href: '/about', label: 'Legacy' },
     { href: '/packages', label: 'Stage Packages' },
-    { href: '/packages?tab=materials', label: 'Materials Rent' },
+    { href: '/packages?tab=materials', label: '📦 Materials Rent' },
     { href: '/gallery', label: 'Live Stages' },
     { href: '/contact', label: 'Contact' },
   ];
@@ -58,16 +58,17 @@ export function Navbar() {
           {/* Desktop Navigation (No Box UI) */}
           <nav className="hidden md:flex items-center gap-1 sm:gap-2">
             {navLinks.map((link) => {
-              const isActive = pathname === link.href;
+              const isMaterials = link.href === '/packages?tab=materials';
+              const isActive = pathname === link.href || (isMaterials && pathname === '/packages');
               return (
                 <Link
                   key={link.href}
                   href={link.href}
                   className={cn(
                     'px-4 py-1.5 rounded-full text-xs font-medium tracking-wide transition-all duration-200',
-                    isActive
-                      ? 'bg-amber text-ink font-bold shadow-md shadow-amber/20'
-                      : 'text-neutral-300 hover:text-white hover:bg-white/10'
+                    isMaterials && 'border border-amber/40 text-amber font-semibold hover:bg-amber hover:text-ink',
+                    isActive && !isMaterials && 'bg-amber text-ink font-bold shadow-md shadow-amber/20',
+                    !isActive && !isMaterials && 'text-neutral-300 hover:text-white hover:bg-white/10'
                   )}
                 >
                   {link.label}
