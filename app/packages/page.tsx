@@ -90,8 +90,8 @@ function PackagesContent() {
 
   const packageCategories = [
     { id: 'all', label: 'All Event Rigs' },
-    { id: 'materials-rent', label: '📦 Rent Materials by Item' },
-    { id: 'custom', label: '🛠️ Custom Packages' },
+    { id: 'materials-rent', label: 'Rent Materials by Item' },
+    { id: 'custom', label: 'Custom Packages' },
     { id: 'audio', label: 'Audio Only' },
     { id: 'lighting', label: 'Stage Lighting' },
     { id: 'combo', label: 'Audio + Lighting Combos' },
@@ -181,7 +181,7 @@ function PackagesContent() {
 
         {/* Main Tab Switch: Packages / Materials Rent */}
         <div className="flex justify-center pt-4 pb-2">
-          <div className="inline-flex p-1.5 rounded-full bg-black/80 border-2 border-amber/40 shadow-2xl shadow-amber/20 backdrop-blur-xl">
+          <div className="inline-flex p-1.5 rounded-full bg-black/80 border-2 border-amber/40 backdrop-blur-xl">
             <button
               id="tab-btn-packages"
               onClick={() => {
@@ -190,7 +190,7 @@ function PackagesContent() {
               }}
               className={`flex items-center gap-2.5 px-6 sm:px-8 py-3 rounded-full text-xs sm:text-sm font-heading uppercase tracking-wider font-extrabold transition-all duration-300 ${
                 activeTab === 'packages'
-                  ? 'bg-amber text-ink shadow-lg shadow-amber/30 scale-100'
+                  ? 'bg-amber text-ink scale-100'
                   : 'text-neutral-400 hover:text-white hover:bg-white/10'
               }`}
             >
@@ -205,12 +205,12 @@ function PackagesContent() {
               }}
               className={`flex items-center gap-2.5 px-6 sm:px-8 py-3 rounded-full text-xs sm:text-sm font-heading uppercase tracking-wider font-extrabold transition-all duration-300 ${
                 activeTab === 'materials'
-                  ? 'bg-amber text-ink shadow-lg shadow-amber/30 scale-100'
+                  ? 'bg-amber text-ink scale-100'
                   : 'text-neutral-400 hover:text-white hover:bg-white/10'
               }`}
             >
               <Package className="w-4 h-4" />
-              <span>📦 Materials Rent</span>
+              <span>Materials Rent</span>
               {cartItemCount > 0 && (
                 <span className="px-2 py-0.5 rounded-full bg-ink text-amber text-xs font-mono font-bold">
                   {cartItemCount}
@@ -244,7 +244,7 @@ function PackagesContent() {
                 setActiveTab('materials');
                 router.replace('/packages?tab=materials', { scroll: false });
               }}
-              className="px-5 py-2.5 rounded-full bg-amber text-ink font-bold text-xs uppercase tracking-wider shrink-0 hover:brightness-110 shadow-lg shadow-amber/20"
+              className="px-5 py-2.5 rounded-full bg-amber text-ink font-bold text-xs uppercase tracking-wider shrink-0 hover:brightness-110 "
             >
               Browse Materials Rent Catalog →
             </button>
@@ -269,7 +269,7 @@ function PackagesContent() {
                     c.id === 'materials-rent'
                       ? 'bg-amber/20 text-amber hover:bg-amber hover:text-ink font-bold border border-amber/40 shadow-sm'
                       : isActive
-                      ? 'bg-amber text-ink font-bold shadow-lg shadow-amber/25'
+                      ? 'bg-amber text-ink font-bold '
                       : 'text-neutral-400 hover:text-white hover:bg-white/5 border border-transparent'
                   }`}
                 >
@@ -423,7 +423,7 @@ function PackagesContent() {
                         href={`/book?package=${pkg.slug}`}
                         className={`w-full py-3.5 rounded-full text-xs font-bold uppercase tracking-widest text-center flex items-center justify-center gap-2 transition-all ${
                           pkg.isPopular
-                            ? 'bg-gradient-to-r from-amber to-amber-soft text-ink hover:brightness-110 shadow-lg shadow-amber/25'
+                            ? 'bg-amber text-ink hover:brightness-110 '
                             : 'border border-white/20 text-white hover:border-amber hover:text-amber'
                         }`}
                       >
@@ -462,7 +462,7 @@ function PackagesContent() {
                   onClick={() => setMaterialsCategoryFilter('all')}
                   className={`px-4 py-1.5 rounded-full text-xs font-mono uppercase tracking-wider transition-all ${
                     materialsCategoryFilter === 'all'
-                      ? 'bg-amber text-ink font-bold shadow-md shadow-amber/20'
+                      ? 'bg-amber text-ink font-bold '
                       : 'text-neutral-400 hover:text-white bg-white/5 border border-white/10 hover:bg-white/10'
                   }`}
                 >
@@ -477,7 +477,7 @@ function PackagesContent() {
                       onClick={() => setMaterialsCategoryFilter(cat)}
                       className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-mono uppercase tracking-wider transition-all ${
                         materialsCategoryFilter === cat
-                          ? 'bg-amber text-ink font-bold shadow-md shadow-amber/20'
+                          ? 'bg-amber text-ink font-bold '
                           : 'text-neutral-400 hover:text-white bg-white/5 border border-white/10 hover:bg-white/10'
                       }`}
                     >
@@ -523,7 +523,7 @@ function PackagesContent() {
                               key={m.id}
                               className={`p-5 rounded-2xl border transition-all ${
                                 qty > 0
-                                  ? 'border-amber/60 bg-amber/5 shadow-lg shadow-amber/10'
+                                  ? 'border-amber/60 bg-amber/5 '
                                   : 'border-white/10 bg-white/[0.03] hover:border-white/20'
                               }`}
                             >
@@ -663,7 +663,7 @@ function PackagesContent() {
                     <div className="space-y-2.5 pt-2">
                       <button
                         onClick={handleBookCustomPackage}
-                        className="w-full py-4 rounded-full bg-gradient-to-r from-amber to-amber-soft text-ink font-bold text-xs uppercase tracking-widest text-center flex items-center justify-center gap-2 hover:brightness-110 shadow-lg shadow-amber/25 transition-all cursor-pointer"
+                        className="w-full py-4 rounded-full bg-amber text-ink font-bold text-xs uppercase tracking-widest text-center flex items-center justify-center gap-2 hover:brightness-110 transition-all cursor-pointer"
                       >
                         <Calendar className="w-3.5 h-3.5" />
                         <span>Book as Custom Rig ({formatINR(cartTotal)}/day)</span>
@@ -723,7 +723,7 @@ function PackagesContent() {
 
         <Link
           href="/inquiry"
-          className="shrink-0 px-9 py-4 rounded-full bg-gradient-to-r from-amber to-amber-soft text-ink font-bold text-xs uppercase tracking-widest hover:brightness-110 transition-all shadow-xl shadow-amber/25"
+          className="shrink-0 px-9 py-4 rounded-full bg-amber text-ink font-bold text-xs uppercase tracking-widest hover:brightness-110 transition-all "
         >
           Request Custom Proposal
         </Link>

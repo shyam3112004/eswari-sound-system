@@ -278,7 +278,7 @@ function BookingFlow() {
         <div className="space-y-3 pt-2">
           <Link
             href={`/my-bookings?query=${encodeURIComponent(bookingSuccess.customerPhone)}`}
-            className="w-full py-4 rounded-full bg-gradient-to-r from-amber to-amber-soft text-ink font-bold text-xs uppercase tracking-widest flex items-center justify-center gap-2 hover:brightness-110 shadow-xl shadow-amber/25 transition-all"
+            className="w-full py-4 rounded-full bg-amber text-ink font-bold text-xs uppercase tracking-widest flex items-center justify-center gap-2 hover:brightness-110 transition-all"
           >
             <span>Track Order in Customer Portal</span>
             <ArrowRight className="w-4 h-4" />
@@ -292,7 +292,7 @@ function BookingFlow() {
             rel="noopener noreferrer"
             className="w-full py-3.5 rounded-full glass-card hover:bg-emerald-950/40 text-emerald-400 border border-emerald-500/30 font-semibold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all"
           >
-            <span>💬 Chat on WhatsApp with Dispatch</span>
+            <span>Chat on WhatsApp with Dispatch</span>
           </a>
 
           <Link
@@ -344,7 +344,7 @@ function BookingFlow() {
                 }}
                 className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-mono font-bold transition-all ${
                   step === s.num
-                    ? 'bg-amber text-ink shadow-md shadow-amber/20'
+                    ? 'bg-amber text-ink '
                     : step > s.num
                     ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
                     : 'bg-white/10 text-neutral-400'
@@ -355,7 +355,7 @@ function BookingFlow() {
               <span className="text-xs font-mono text-neutral-400 hidden sm:inline">
                 {s.label}
               </span>
-              {s.num < 4 && <span className="text-neutral-600 hidden sm:inline">—</span>}
+              {s.num < 4 && <span className="text-neutral-600 hidden sm:inline">·</span>}
             </div>
           ))}
         </div>
@@ -475,7 +475,7 @@ function BookingFlow() {
                         isSelected
                           ? isPkgCustom
                             ? 'glass-card-amber border-haze shadow-lg shadow-haze/15'
-                            : 'glass-card-amber border-amber shadow-lg shadow-amber/15'
+                            : 'glass-card-amber border-amber '
                           : 'bg-white/5 border-white/10 hover:border-white/20'
                       }`}
                     >
@@ -528,7 +528,7 @@ function BookingFlow() {
 
                       {isSelected && isPkgCustom && (
                         <div className="mt-3 ml-6 p-2.5 rounded-xl bg-haze/10 border border-haze/30 text-xs text-haze font-mono flex items-center gap-2">
-                          <span>🛠️</span>
+                          <AlertCircle className="w-3.5 h-3.5 shrink-0" aria-hidden />
                           <span>Custom Rig selected. In the next step, select the exact equipment and quantities needed.</span>
                         </div>
                       )}
@@ -549,7 +549,7 @@ function BookingFlow() {
                   <button
                     type="button"
                     onClick={() => setStep(3)}
-                    className="px-6 py-3 rounded-full bg-gradient-to-r from-amber to-amber-soft text-ink font-semibold text-xs uppercase tracking-wider hover:brightness-110 flex items-center gap-2 shadow-lg shadow-amber/20"
+                    className="px-6 py-3 rounded-full bg-amber text-ink font-semibold text-xs uppercase tracking-wider hover:brightness-110 flex items-center gap-2 "
                   >
                     <span>{isCustomRig ? 'Choose Custom Materials' : 'Continue to Materials'}</span>
                     <ArrowRight className="w-3.5 h-3.5" />
@@ -705,7 +705,7 @@ function BookingFlow() {
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="px-8 py-4 rounded-full bg-gradient-to-r from-amber to-amber-soft text-ink font-bold text-xs uppercase tracking-widest hover:brightness-110 active:scale-95 transition-all shadow-xl shadow-amber/25 disabled:opacity-60 flex items-center gap-2"
+                    className="px-8 py-4 rounded-full bg-amber text-ink font-bold text-xs uppercase tracking-widest hover:brightness-110 active:scale-95 transition-all disabled:opacity-60 flex items-center gap-2"
                   >
                     {submitting ? (
                       <>
@@ -771,8 +771,9 @@ function BookingFlow() {
                   </div>
                 </>
               ) : isCustomRig ? (
-                <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber text-[11px] font-mono">
-                  ⚠️ No materials chosen yet. Please pick gear in Step 3.
+                <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber text-[11px] font-mono flex items-start gap-2">
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-px" aria-hidden />
+                  <span>No materials chosen yet. Please pick gear in Step 3.</span>
                 </div>
               ) : null}
 

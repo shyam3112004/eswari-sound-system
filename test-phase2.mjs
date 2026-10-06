@@ -1,6 +1,24 @@
 // Phase 2 API End-to-End Verification Test
 const BASE_URL = 'http://localhost:3000';
 
+// Dates lock permanently once a booking exists, so pick the first open date
+// from a starting point instead of hardcoding one. Keeps the suite re-runnable.
+async function findOpenDate(startDate) {
+  const cursor = new Date(`${startDate}T00:00:00Z`);
+  for (let i = 0; i < 60; i += 1) {
+    const date = cursor.toISOString().slice(0, 10);
+    const res = await fetch(`${BASE_URL}/api/availability/check`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ date }),
+    });
+    const data = await res.json();
+    if (data.available === true) return date;
+    cursor.setUTCDate(cursor.getUTCDate() + 1);
+  }
+  throw new Error('No open date found within 60 days of ' + startDate);
+}
+
 async function runTests() {
   console.log('--- STARTING PHASE 2 API VERIFICATION ---\n');
   let passed = 0;
@@ -55,7 +73,8 @@ async function runTests() {
 
     // 5. Test POST /api/availability/check on open date
     console.log('\n5. Testing POST /api/availability/check on open future date...');
-    const testDate = '2026-11-20';
+    const testDate = await findOpenDate('2026-11-20');
+    console.log(`   (open date selected: ${testDate})`);
     const resCheckOpen = await fetch(`${BASE_URL}/api/availability/check`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

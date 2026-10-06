@@ -97,7 +97,7 @@ export function AuthButton() {
                 className="w-6 h-6 rounded-full object-cover border border-amber/40"
               />
             ) : (
-              <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-amber to-amber-soft text-ink font-bold flex items-center justify-center text-[11px]">
+              <div className="w-6 h-6 rounded-full bg-amber text-ink font-bold flex items-center justify-center text-[11px]">
                 {user.name ? user.name[0].toUpperCase() : 'U'}
               </div>
             )}

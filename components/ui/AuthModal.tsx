@@ -170,7 +170,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
 
         {/* Modal Header */}
         <div className="text-center space-y-2">
-          <div className="w-12 h-12 rounded-2xl bg-amber/15 border border-amber/30 flex items-center justify-center text-amber mx-auto mb-3 shadow-lg shadow-amber/20">
+          <div className="w-12 h-12 rounded-2xl bg-amber/15 border border-amber/30 flex items-center justify-center text-amber mx-auto mb-3 ">
             <Sparkles className="w-6 h-6 text-amber" />
           </div>
           <h3 className="font-heading text-2xl font-bold text-white tracking-tight">
@@ -292,7 +292,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
             <button
               type="submit"
               disabled={loading || !email || !password}
-              className="w-full mt-2 py-3 rounded-full bg-gradient-to-r from-amber to-amber-soft text-ink font-bold text-xs uppercase tracking-wider hover:brightness-110 active:scale-95 transition-all shadow-lg shadow-amber/20 disabled:opacity-50 flex items-center justify-center gap-2"
+              className="w-full mt-2 py-3 rounded-full bg-amber text-ink font-bold text-xs uppercase tracking-wider hover:brightness-110 active:scale-95 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {loading ? (
                 <>

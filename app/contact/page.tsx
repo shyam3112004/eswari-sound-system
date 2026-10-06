@@ -220,7 +220,7 @@ export default function ContactPage() {
 
               <button
                 type="submit"
-                className="w-full py-4 rounded-xl bg-gradient-to-r from-amber to-amber-soft text-ink font-semibold uppercase tracking-widest text-xs hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-xl shadow-amber/25 mt-4"
+                className="w-full py-4 rounded-xl bg-amber text-ink font-semibold uppercase tracking-widest text-xs hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-2 mt-4"
               >
                 <Send className="w-4 h-4" />
                 <span>Submit Direct Inquiry</span>

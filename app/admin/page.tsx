@@ -515,7 +515,7 @@ export default function AdminDashboardPage() {
               onClick={() => setActiveTab(tab.id as any)}
               className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-medium whitespace-nowrap transition-all ${
                 isActive
-                  ? 'bg-amber text-ink font-semibold shadow-md shadow-amber/20'
+                  ? 'bg-amber text-ink font-semibold '
                   : 'text-neutral-400 hover:text-white hover:bg-white/5'
               }`}
             >
@@ -582,10 +582,10 @@ export default function AdminDashboardPage() {
                                 </span>
                               </div>
                               <div className="text-xs text-neutral-300">
-                                📅 <span className="font-mono text-white">{dateStr}</span> • Rig: <span className="text-amber font-semibold">{b.package?.name}</span>
+                                <span className="font-mono text-white">{dateStr}</span> • Rig: <span className="text-amber font-semibold">{b.package?.name}</span>
                               </div>
                               <div className="text-xs text-neutral-400">
-                                📍 Venue: <span className="text-neutral-200">{b.venueAddress}</span>
+                                Venue: <span className="text-neutral-200">{b.venueAddress}</span>
                               </div>
                               {b.notes && (
                                 <div className="text-[11px] text-neutral-300 bg-white/5 p-2 rounded-lg font-mono italic">
@@ -622,7 +622,7 @@ export default function AdminDashboardPage() {
 
                               <button
                                 onClick={() => handleConfirmOrder(b.id)}
-                                className="w-full py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 text-ink font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 hover:brightness-110 shadow-lg shadow-emerald-950/40 transition-all"
+                                className="w-full py-2.5 rounded-xl bg-emerald-500 text-ink font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 hover:brightness-110 transition-all"
                               >
                                 <Check className="w-3.5 h-3.5 stroke-[3]" />
                                 <span>Confirm Order & Unlock 25% Payment</span>
@@ -636,7 +636,7 @@ export default function AdminDashboardPage() {
               )}
 
               {/* Portfolio Quick Access Banner (Admin Only) */}
-              <div className="glass-card rounded-2xl p-5 border border-amber/30 bg-gradient-to-r from-amber/15 via-amber/5 to-transparent flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="glass-card rounded-2xl p-5 border border-amber/30 bg-amber/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-3.5">
                   <div className="w-10 h-10 rounded-xl bg-amber/20 border border-amber/40 flex items-center justify-center text-amber shrink-0">
                     <Film className="w-5 h-5 stroke-[2.2]" />
@@ -655,7 +655,7 @@ export default function AdminDashboardPage() {
                 </div>
                 <button
                   onClick={() => setActiveTab('portfolio')}
-                  className="px-4 py-2.5 rounded-xl bg-amber text-ink text-xs font-bold uppercase tracking-wider hover:brightness-110 shadow-lg shadow-amber/25 transition-all shrink-0 flex items-center justify-center gap-1.5"
+                  className="px-4 py-2.5 rounded-xl bg-amber text-ink text-xs font-bold uppercase tracking-wider hover:brightness-110 transition-all shrink-0 flex items-center justify-center gap-1.5"
                 >
                   <Upload className="w-3.5 h-3.5 stroke-[2.5]" />
                   <span>Open Portfolio Manager →</span>
@@ -809,7 +809,7 @@ export default function AdminDashboardPage() {
                               }`}
                             >
                               {b.status === 'PENDING'
-                                ? '📞 Needs Phone Call'
+                                ? 'Needs Phone Call'
                                 : b.status === 'APPROVED'
                                 ? 'Call Confirmed • Awaiting Deposit'
                                 : b.status}
@@ -826,15 +826,15 @@ export default function AdminDashboardPage() {
                           </div>
 
                           <div className="text-xs text-neutral-300 font-mono flex flex-wrap items-center gap-3">
-                            <span>📅 Date: <strong className="text-white">{dateStr}</strong></span>
+                            <span>Date: <strong className="text-white">{dateStr}</strong></span>
                             <span>•</span>
-                            <span>🎪 Rig: <strong className="text-amber">{b.package?.name}</strong></span>
+                            <span>Rig: <strong className="text-amber">{b.package?.name}</strong></span>
                             <span>•</span>
-                            <span>📞 Phone: <strong className="text-white">{b.customerPhone}</strong></span>
+                            <span>Phone: <strong className="text-white">{b.customerPhone}</strong></span>
                           </div>
 
                           <div className="text-xs text-neutral-400">
-                            📍 Venue: <span className="text-neutral-200">{b.venueAddress}</span>
+                            Venue: <span className="text-neutral-200">{b.venueAddress}</span>
                           </div>
 
                           {b.notes && (
@@ -879,7 +879,7 @@ export default function AdminDashboardPage() {
                         <div className="flex flex-wrap items-center gap-2">
                           <a
                             href={`tel:${b.customerPhone}`}
-                            className="px-3.5 py-2 rounded-xl bg-amber text-ink text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 hover:brightness-110 transition-all shadow-md shadow-amber/20"
+                            className="px-3.5 py-2 rounded-xl bg-amber text-ink text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 hover:brightness-110 transition-all "
                           >
                             <Phone className="w-3.5 h-3.5" />
                             <span>Call Customer</span>
@@ -1196,7 +1196,7 @@ export default function AdminDashboardPage() {
                           onClick={() => setPortMediaType('image')}
                           className={`flex items-center justify-center gap-2 py-3 px-4 rounded-xl border text-xs font-mono uppercase tracking-wider transition-all ${
                             portMediaType === 'image'
-                              ? 'bg-amber text-ink font-bold border-amber shadow-lg shadow-amber/20'
+                              ? 'bg-amber text-ink font-bold border-amber '
                               : 'bg-white/5 border-white/10 text-neutral-400 hover:text-white'
                           }`}
                         >
@@ -1208,7 +1208,7 @@ export default function AdminDashboardPage() {
                           onClick={() => setPortMediaType('video')}
                           className={`flex items-center justify-center gap-2 py-3 px-4 rounded-xl border text-xs font-mono uppercase tracking-wider transition-all ${
                             portMediaType === 'video'
-                              ? 'bg-amber text-ink font-bold border-amber shadow-lg shadow-amber/20'
+                              ? 'bg-amber text-ink font-bold border-amber '
                               : 'bg-white/5 border-white/10 text-neutral-400 hover:text-white'
                           }`}
                         >
@@ -1381,7 +1381,7 @@ export default function AdminDashboardPage() {
                     <button
                       type="submit"
                       disabled={portfolioSubmitting || portfolioUploading}
-                      className="w-full py-3.5 rounded-xl bg-gradient-to-r from-amber to-amber-soft text-ink font-bold text-xs uppercase tracking-widest hover:brightness-110 transition-all shadow-xl shadow-amber/20 flex items-center justify-center gap-2 disabled:opacity-50"
+                      className="w-full py-3.5 rounded-xl bg-amber text-ink font-bold text-xs uppercase tracking-widest hover:brightness-110 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                     >
                       {portfolioSubmitting ? (
                         <>
@@ -1535,7 +1535,7 @@ export default function AdminDashboardPage() {
                                 onClick={() => setActiveMediaPreview(item)}
                                 className="absolute inset-0 flex items-center justify-center bg-black/40 group-hover:bg-black/20 transition-all cursor-pointer"
                               >
-                                <div className="w-12 h-12 rounded-full bg-amber text-ink flex items-center justify-center shadow-lg shadow-amber/30 group-hover:scale-110 transition-transform">
+                                <div className="w-12 h-12 rounded-full bg-amber text-ink flex items-center justify-center group-hover:scale-110 transition-transform">
                                   <Play className="w-5 h-5 fill-current ml-0.5" />
                                 </div>
                               </div>
@@ -1756,11 +1756,11 @@ export default function AdminDashboardPage() {
                         onChange={(e) => setMatCategory(e.target.value)}
                         className="w-full px-4 py-2.5 rounded-xl bg-ink border border-white/20 text-white text-xs"
                       >
-                        <option value="audio">🔊 Audio Equipment</option>
-                        <option value="lighting">💡 Lighting & Effects</option>
-                        <option value="staging">🎭 Staging & Structure</option>
-                        <option value="power">⚡ Power & Generators</option>
-                        <option value="effects">✨ Special Effects</option>
+                          <option value="audio">Audio Equipment</option>
+                          <option value="lighting">Lighting & Effects</option>
+                          <option value="staging">Staging & Structure</option>
+                          <option value="power">Power & Generators</option>
+                          <option value="effects">Special Effects</option>
                       </select>
                     </div>
                   </div>
@@ -1847,7 +1847,7 @@ export default function AdminDashboardPage() {
                   <button
                     type="submit"
                     disabled={matSubmitting}
-                    className="w-full py-3.5 rounded-xl bg-gradient-to-r from-haze to-haze-soft text-ink font-bold text-xs uppercase tracking-widest hover:brightness-110 transition-all shadow-xl shadow-haze/20 flex items-center justify-center gap-2 disabled:opacity-50"
+                    className="w-full py-3.5 rounded-xl bg-haze text-ink font-bold text-xs uppercase tracking-widest hover:brightness-110 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                   >
                     {matSubmitting ? (
                       <>

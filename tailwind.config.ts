@@ -4,7 +4,7 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        ink: '#0B0B0F',
+        ink: { DEFAULT: '#0B0B0F', raised: '#131318' },
         amber: { DEFAULT: '#FFB11A', soft: '#C9A86A' },
         haze: '#38BDF8',
       },

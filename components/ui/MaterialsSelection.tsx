@@ -308,8 +308,8 @@ export default function MaterialsSelection({
                 }}
                 className={`px-6 py-3 rounded-full text-ink font-semibold text-xs uppercase tracking-wider hover:brightness-110 flex items-center gap-2 shadow-lg transition-all ${
                   isCustomPackage
-                    ? 'bg-gradient-to-r from-amber to-amber-soft shadow-amber/20'
-                    : 'bg-gradient-to-r from-haze to-haze-soft shadow-haze/20'
+                    ? 'bg-amber '
+                    : 'bg-haze'
                 }`}
               >
                 <span>Continue to Venue Details</span>

@@ -96,7 +96,7 @@ function LoginForm() {
       <button
         type="submit"
         disabled={loading}
-        className="w-full mt-2 py-3.5 rounded-xl bg-gradient-to-r from-amber to-amber-soft text-ink font-semibold text-xs uppercase tracking-widest hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-lg shadow-amber/25 disabled:opacity-60"
+        className="w-full mt-2 py-3.5 rounded-xl bg-amber text-ink font-semibold text-xs uppercase tracking-widest hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-60"
       >
         {loading ? (
           <>
@@ -124,7 +124,7 @@ export default function AdminLoginPage() {
         <div className="glass-card-amber rounded-3xl p-8 sm:p-10 border border-amber/20 shadow-2xl relative">
           {/* Header */}
           <div className="text-center mb-8">
-            <div className="inline-flex w-12 h-12 rounded-2xl bg-amber/15 border border-amber/30 items-center justify-center text-amber mb-4 shadow-lg shadow-amber/10">
+            <div className="inline-flex w-12 h-12 rounded-2xl bg-amber/15 border border-amber/30 items-center justify-center text-amber mb-4 ">
               <Volume2 className="w-6 h-6 stroke-[2.5]" />
             </div>
             <h1 className="font-heading text-2xl font-bold text-white tracking-tight">

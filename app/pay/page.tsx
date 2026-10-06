@@ -392,7 +392,7 @@ function PaymentScreen() {
         <button
           onClick={handlePayAdvance}
           disabled={paying}
-          className="w-full py-4 rounded-full bg-gradient-to-r from-amber to-amber-soft text-ink font-bold text-xs uppercase tracking-widest hover:brightness-110 active:scale-95 transition-all shadow-xl shadow-amber/25 disabled:opacity-60 flex items-center justify-center gap-2"
+          className="w-full py-4 rounded-full bg-amber text-ink font-bold text-xs uppercase tracking-widest hover:brightness-110 active:scale-95 transition-all disabled:opacity-60 flex items-center justify-center gap-2"
         >
           {paying ? (
             <>

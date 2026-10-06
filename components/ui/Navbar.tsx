@@ -1,163 +1,181 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Volume2, Menu, X, Calendar, Phone } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { AuthButton } from './AuthButton';
 
+const NAV_LINKS = [
+  { href: '/', label: 'Experience' },
+  { href: '/about', label: 'Legacy' },
+  { href: '/packages', label: 'Stage Packages' },
+  { href: '/packages?tab=materials', label: 'Materials Rent' },
+  { href: '/gallery', label: 'Live Stages' },
+  { href: '/contact', label: 'Contact' },
+];
+
 export function Navbar() {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const sentinelRef = useRef<HTMLDivElement>(null);
 
+  // IntersectionObserver sentinel instead of a scroll listener: the callback
+  // only fires on threshold crossings, never per scroll frame.
   useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setScrolled(!entry.isIntersecting),
+      { threshold: 0 }
+    );
+    observer.observe(sentinel);
+    return () => observer.disconnect();
   }, []);
 
-  const navLinks = [
-    { href: '/', label: 'Experience' },
-    { href: '/about', label: 'Legacy' },
-    { href: '/packages', label: 'Stage Packages' },
-    { href: '/packages?tab=materials', label: '📦 Materials Rent' },
-    { href: '/gallery', label: 'Live Stages' },
-    { href: '/contact', label: 'Contact' },
-  ];
+  const isActive = (href: string) => {
+    if (href === '/') return pathname === '/';
+    return pathname === href.split('?')[0];
+  };
 
   return (
+    <>
+    {/* Out-of-flow sentinel at the document top (nav height): crosses the
+        viewport threshold once the user scrolls past the navbar. */}
+    <div ref={sentinelRef} className="absolute left-0 top-0 w-px h-20 pointer-events-none" aria-hidden />
     <header
       className={cn(
-        'fixed top-0 left-0 right-0 z-50 transition-all duration-300',
+        'fixed top-0 left-0 right-0 z-50 transition-[background-color,border-color] duration-300',
         scrolled
-          ? 'glass-panel py-3 shadow-2xl'
-          : 'bg-gradient-to-b from-ink/90 via-ink/40 to-transparent py-5'
+          ? 'glass-panel py-3'
+          : 'bg-gradient-to-b from-ink/90 via-ink/50 to-transparent py-5'
       )}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-4">
           {/* Logo & Identity */}
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-amber to-amber-soft flex items-center justify-center text-ink font-bold shadow-lg shadow-amber/20 group-hover:scale-105 transition-transform">
-              <Volume2 className="w-5 h-5 text-ink stroke-[2.5]" />
+          <Link href="/" className="flex items-center gap-3 group shrink-0">
+            <div className="w-10 h-10 rounded-full bg-amber flex items-center justify-center text-ink group-hover:brightness-110 transition-[filter]">
+              <Volume2 className="w-5 h-5 text-ink stroke-[2]" aria-hidden />
             </div>
-            <div className="flex flex-col">
-              <span className="font-heading text-lg font-bold tracking-tight text-white flex items-center gap-1.5">
-                ESWARI <span className="text-amber font-normal text-xs uppercase tracking-widest px-1.5 py-0.5 rounded bg-amber/10 border border-amber/20">Sound</span>
+            <div className="flex flex-col leading-tight">
+              <span className="font-heading text-lg font-bold tracking-tight text-white">
+                ESWARI
               </span>
-              <span className="text-[10px] uppercase tracking-widest text-neutral-400 font-mono">
-                Concert Audio & Stage Rigging
+              <span className="hidden sm:block text-[10px] uppercase tracking-widest text-neutral-400 font-mono">
+                Concert audio & stage rigging
               </span>
             </div>
           </Link>
 
-          {/* Desktop Navigation (No Box UI) */}
-          <nav className="hidden md:flex items-center gap-1 sm:gap-2">
-            {navLinks.map((link) => {
-              const isMaterials = link.href === '/packages?tab=materials';
-              const isActive = pathname === link.href || (isMaterials && pathname === '/packages');
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={cn(
-                    'px-4 py-1.5 rounded-full text-xs font-medium tracking-wide transition-all duration-200',
-                    isMaterials && 'border border-amber/40 text-amber font-semibold hover:bg-amber hover:text-ink',
-                    isActive && !isMaterials && 'bg-amber text-ink font-bold shadow-md shadow-amber/20',
-                    !isActive && !isMaterials && 'text-neutral-300 hover:text-white hover:bg-white/10'
-                  )}
-                >
-                  {link.label}
-                </Link>
-              );
-            })}
+          {/* Desktop navigation: single line */}
+          <nav className="hidden lg:flex items-center gap-1" aria-label="Primary">
+            {NAV_LINKS.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                aria-current={isActive(link.href) ? 'page' : undefined}
+                className={cn(
+                  'px-3 py-1.5 rounded-full text-[13px] font-medium tracking-wide transition-colors whitespace-nowrap',
+                  link.href === '/packages?tab=materials' &&
+                    !isActive(link.href) &&
+                    'text-amber hover:bg-amber/10',
+                  isActive(link.href) &&
+                    link.href !== '/packages?tab=materials' &&
+                    'bg-white/10 text-white',
+                  !isActive(link.href) &&
+                    link.href !== '/packages?tab=materials' &&
+                    'text-neutral-400 hover:text-white hover:bg-white/5'
+                )}
+              >
+                {link.label}
+              </Link>
+            ))}
           </nav>
 
           {/* Action CTAs */}
-          <div className="hidden lg:flex items-center gap-3">
+          <div className="hidden lg:flex items-center gap-3 shrink-0">
             <a
               href="tel:+919876543210"
-              className="flex items-center gap-1.5 text-xs text-neutral-400 hover:text-amber font-mono transition-colors px-3 py-1.5"
+              className="flex items-center gap-1.5 text-xs text-neutral-500 hover:text-amber font-mono transition-colors px-2"
             >
-              <Phone className="w-3.5 h-3.5 text-amber" />
+              <Phone className="w-3.5 h-3.5" aria-hidden />
               <span>+91 98765 43210</span>
             </a>
 
             <AuthButton />
-            
+
             <Link
               href="/book"
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-semibold bg-gradient-to-r from-amber to-amber-soft text-ink hover:brightness-110 active:scale-95 transition-all shadow-lg shadow-amber/25"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold uppercase tracking-wider bg-amber text-ink hover:brightness-110 active:scale-[0.98] transition-all"
             >
-              <Calendar className="w-3.5 h-3.5" />
+              <Calendar className="w-3.5 h-3.5" aria-hidden />
               <span>Book Stage Rig</span>
             </Link>
           </div>
 
-          {/* Mobile menu trigger */}
-          <div className="flex md:hidden items-center gap-2">
+          {/* Mobile trigger */}
+          <div className="flex lg:hidden items-center gap-2 shrink-0">
             <AuthButton />
-
             <Link
               href="/book"
-              className="px-3 py-1.5 rounded-full text-xs font-semibold bg-amber text-ink"
+              className="px-3 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wide bg-amber text-ink whitespace-nowrap"
             >
-              Book
+              Book Stage Rig
             </Link>
             <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 text-neutral-300 hover:text-white rounded-lg focus:outline-none"
-              aria-label="Toggle Menu"
+              onClick={() => setMobileMenuOpen((open) => !open)}
+              className="p-2 text-neutral-300 hover:text-white rounded-lg focus:outline-none focus-visible:ring-1 focus-visible:ring-amber"
+              aria-label="Toggle menu"
+              aria-expanded={mobileMenuOpen}
             >
               {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
           </div>
-
         </div>
       </div>
 
-      {/* Mobile Menu Dropdown */}
+      {/* Mobile menu */}
       {mobileMenuOpen && (
-        <div className="md:hidden glass-panel border-t border-white/10 px-4 pt-4 pb-6 space-y-3 mt-2 animate-in fade-in slide-in-from-top-2">
-
-
-          {navLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              onClick={() => setMobileMenuOpen(false)}
-              className={cn(
-                'block px-4 py-2.5 rounded-xl text-sm font-medium transition-colors',
-                pathname === link.href
-                  ? 'bg-amber text-ink font-semibold'
-                  : 'text-neutral-300 hover:text-white hover:bg-white/5'
-              )}
-            >
-              {link.label}
-            </Link>
-          ))}
-          <div className="pt-3 border-t border-white/10 flex flex-col gap-2">
+        <div className="lg:hidden glass-panel border-t border-white/10 px-4 pt-4 pb-6 mt-2">
+          <nav className="flex flex-col gap-1" aria-label="Mobile">
+            {NAV_LINKS.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                onClick={() => setMobileMenuOpen(false)}
+                className={cn(
+                  'px-4 py-2.5 rounded-xl text-sm font-medium transition-colors',
+                  isActive(link.href)
+                    ? 'bg-white/10 text-white'
+                    : 'text-neutral-300 hover:text-white hover:bg-white/5'
+                )}
+              >
+                {link.label}
+              </Link>
+            ))}
+          </nav>
+          <div className="pt-3 mt-3 border-t border-white/10 flex flex-col gap-2">
             <Link
               href="/inquiry"
               onClick={() => setMobileMenuOpen(false)}
-              className="w-full text-center py-2.5 rounded-xl text-xs font-medium border border-amber/40 text-amber hover:bg-amber/10"
+              className="w-full text-center py-2.5 rounded-xl text-xs font-semibold uppercase tracking-wider border border-amber/40 text-amber hover:bg-amber/10 transition-colors"
             >
-              Request Custom Quote
+              Request a Quote
             </Link>
             <Link
               href="/my-bookings"
               onClick={() => setMobileMenuOpen(false)}
-              className="w-full text-center py-2.5 rounded-xl text-xs text-neutral-400 hover:text-white"
+              className="w-full text-center py-2.5 rounded-xl text-xs text-neutral-400 hover:text-white transition-colors"
             >
-              Lookup Existing Booking
+              My Bookings
             </Link>
           </div>
         </div>
       )}
     </header>
+    </>
   );
 }

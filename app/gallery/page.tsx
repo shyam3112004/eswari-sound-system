@@ -126,7 +126,7 @@ export default function GalleryPage() {
           <div className="pt-2 flex items-center justify-center gap-3">
             <Link
               href="/admin?tab=portfolio"
-              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-amber text-ink font-bold text-xs font-mono uppercase tracking-wider hover:brightness-110 shadow-xl shadow-amber/30 transition-all active:scale-95"
+              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-amber text-ink font-bold text-xs font-mono uppercase tracking-wider hover:brightness-110 transition-all active:scale-95"
             >
               <Upload className="w-3.5 h-3.5 stroke-[2.5]" />
               <span>Admin: + Upload New Project To Portfolio</span>
@@ -147,7 +147,7 @@ export default function GalleryPage() {
                 }}
                 className={`px-5 py-2 rounded-full text-xs font-mono uppercase tracking-wider transition-all ${
                   isActive
-                    ? 'bg-amber text-ink font-bold shadow-lg shadow-amber/25'
+                    ? 'bg-amber text-ink font-bold '
                     : 'text-neutral-400 hover:text-white hover:bg-white/5'
                 }`}
               >
@@ -200,7 +200,7 @@ export default function GalleryPage() {
 
                     {/* Play Button Overlay */}
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="w-14 h-14 rounded-full bg-amber/90 text-ink flex items-center justify-center shadow-xl shadow-amber/40 group-hover:scale-115 transition-all group-hover:bg-amber">
+                      <div className="w-14 h-14 rounded-full bg-amber/90 text-ink flex items-center justify-center group-hover:scale-115 transition-all group-hover:bg-amber">
                         <Play className="w-6 h-6 fill-current ml-0.5 text-ink" />
                       </div>
                     </div>
@@ -382,7 +382,7 @@ export default function GalleryPage() {
               <div className="shrink-0 flex items-center gap-3">
                 <Link
                   href="/book"
-                  className="px-6 py-2.5 rounded-full bg-gradient-to-r from-amber to-amber-soft text-ink font-bold text-xs uppercase tracking-widest hover:brightness-110 transition-all shadow-lg shadow-amber/25 flex items-center gap-2"
+                  className="px-6 py-2.5 rounded-full bg-amber text-ink font-bold text-xs uppercase tracking-widest hover:brightness-110 transition-all flex items-center gap-2"
                 >
                   <Calendar className="w-4 h-4" />
                   <span>Book This Rig</span>
@@ -407,7 +407,7 @@ export default function GalleryPage() {
         <div className="pt-3">
           <Link
             href="/book"
-            className="inline-flex items-center gap-2 px-9 py-4 rounded-full bg-gradient-to-r from-amber to-amber-soft text-ink font-bold text-xs uppercase tracking-widest hover:brightness-110 transition-all shadow-xl shadow-amber/25"
+            className="inline-flex items-center gap-2 px-9 py-4 rounded-full bg-amber text-ink font-bold text-xs uppercase tracking-widest hover:brightness-110 transition-all "
           >
             <Calendar className="w-4 h-4" />
             <span>Check Date & Book Advance</span>

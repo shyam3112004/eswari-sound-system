@@ -1,27 +1,16 @@
-'use client';
-
-import React, { useState, useCallback } from 'react';
+import React from 'react';
 import { CanvasScrubber } from './CanvasScrubber';
 import { SafeZoneOverlays } from './SafeZoneOverlays';
 
+/**
+ * Pinned cinematic stage: 6 sections x 96 desktop frames scrubbed by scroll.
+ * Overlay visibility is driven entirely by CanvasScrubber through the DOM
+ * (data-edge + --local-p), so scrolling never triggers a React re-render.
+ */
 export function CinematicStage() {
-  const [activeSection, setActiveSection] = useState(0);
-  const [sectionProgress, setSectionProgress] = useState(0);
-
-  const handleProgress = useCallback(
-    (_globalProgress: number, sectionIndex: number, secProgress: number) => {
-      setActiveSection(sectionIndex);
-      setSectionProgress(secProgress);
-    },
-    []
-  );
-
   return (
-    <CanvasScrubber onProgress={handleProgress}>
-      <SafeZoneOverlays
-        activeSection={activeSection}
-        sectionProgress={sectionProgress}
-      />
+    <CanvasScrubber>
+      <SafeZoneOverlays />
     </CanvasScrubber>
   );
 }

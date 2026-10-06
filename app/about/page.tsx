@@ -185,7 +185,7 @@ export default function AboutPage() {
         </div>
         <Link
           href="/book"
-          className="px-9 py-4 rounded-full bg-gradient-to-r from-amber to-amber-soft text-ink font-bold text-xs uppercase tracking-widest hover:brightness-110 transition-all shrink-0 shadow-xl shadow-amber/25"
+          className="px-9 py-4 rounded-full bg-amber text-ink font-bold text-xs uppercase tracking-widest hover:brightness-110 transition-all shrink-0 "
         >
           Check Available Dates
         </Link>

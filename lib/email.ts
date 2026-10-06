@@ -128,7 +128,7 @@ export async function sendAdminNewBookingAlert(params: {
     await resend.emails.send({
       from: fromEmail,
       to: adminEmail,
-      subject: `🚨 Action Required: New Order Call Confirmation Needed (#${params.bookingId.slice(0, 8)})`,
+      subject: `Action Required: New Order Call Confirmation Needed (#${params.bookingId.slice(0, 8)})`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #0B0B0F; color: #FFFFFF; padding: 24px; border-radius: 12px;">
           <h2 style="color: #FFB11A; margin-top: 0;">New Stage Booking Request</h2>

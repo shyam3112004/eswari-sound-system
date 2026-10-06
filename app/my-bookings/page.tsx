@@ -110,7 +110,7 @@ function MyBookingsContent() {
           <button
             type="submit"
             disabled={loading}
-            className="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-amber to-amber-soft text-ink font-semibold text-xs uppercase tracking-wider hover:brightness-110 active:scale-95 transition-all shadow-lg shadow-amber/20 disabled:opacity-60 flex items-center gap-2"
+            className="px-6 py-3.5 rounded-2xl bg-amber text-ink font-semibold text-xs uppercase tracking-wider hover:brightness-110 active:scale-95 transition-all disabled:opacity-60 flex items-center gap-2"
           >
             {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <span>Search</span>}
           </button>
@@ -190,10 +190,10 @@ function MyBookingsContent() {
                           }`}
                         >
                           {isAdvancePaid
-                            ? '🎉 Date Locked'
+                            ? 'Date Locked'
                             : isCallDone
-                            ? '📞 Call Confirmed • Pay Advance'
-                            : '⏳ Awaiting Confirmation Call'}
+                            ? 'Call Confirmed · Pay Advance'
+                            : 'Awaiting Confirmation Call'}
                         </span>
                       </div>
                     </div>
@@ -322,7 +322,7 @@ function MyBookingsContent() {
                     <div className="pt-2 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3">
                       <div className="text-xs text-neutral-400 font-mono">
                         {!isCallDone ? (
-                          <span>📞 Expecting call from: <strong className="text-white">+91 98765 43210</strong></span>
+                          <span>Expecting call from: <strong className="text-white">+91 98765 43210</strong></span>
                         ) : isAdvancePaid ? (
                           <span className="text-emerald-400 flex items-center gap-1.5">
                             <ShieldCheck className="w-4 h-4" />
@@ -345,7 +345,7 @@ function MyBookingsContent() {
                         ) : isCallDone ? (
                           <Link
                             href={`/pay?bookingId=${b.id}`}
-                            className="px-6 py-3 rounded-full bg-gradient-to-r from-amber to-amber-soft text-ink hover:brightness-110 text-xs font-bold uppercase tracking-wider flex items-center gap-2 shadow-lg shadow-amber/25 transition-all"
+                            className="px-6 py-3 rounded-full bg-amber text-ink hover:brightness-110 text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all"
                           >
                             <CreditCard className="w-4 h-4" />
                             <span>Pay 25% Advance ({formatINR(b.advanceAmount)})</span>
@@ -394,4 +394,3 @@ export default function MyBookingsPage() {
     </Suspense>
   );
 }
-
