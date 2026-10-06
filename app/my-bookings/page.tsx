@@ -19,6 +19,7 @@ import {
   Clock,
   Sparkles,
   Check,
+  Package,
 } from 'lucide-react';
 import { formatINR } from '@/lib/utils';
 
@@ -298,6 +299,24 @@ function MyBookingsContent() {
                         </div>
                       </div>
                     </div>
+
+                    {/* Included Materials Breakdown */}
+                    {b.bookingMaterials && b.bookingMaterials.length > 0 && (
+                      <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 text-xs space-y-2">
+                        <div className="text-[11px] font-mono text-haze uppercase font-semibold flex items-center gap-1.5">
+                          <Package className="w-3.5 h-3.5 text-haze" />
+                          <span>Selected Rental Equipment ({b.bookingMaterials.length} items):</span>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] font-mono text-neutral-300">
+                          {b.bookingMaterials.map((bm: any) => (
+                            <div key={bm.id} className="flex justify-between bg-black/40 px-2.5 py-1.5 rounded-lg border border-white/5">
+                              <span>{bm.material?.name || 'Equipment'} × {bm.quantity}</span>
+                              <span className="text-amber">{formatINR(bm.totalPrice || bm.pricePerDay * bm.quantity)}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
 
                     {/* Action Row */}
                     <div className="pt-2 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3">

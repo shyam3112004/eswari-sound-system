@@ -1,5 +1,6 @@
 import { prisma } from './prisma';
 import { getPackageBySlug } from './db';
+import { addMaterialsToBookingSafe, getMaterialByIdSafe } from './materialsStore';
 
 // Global shared store across serverless lambdas in warm execution
 const globalStore = global as unknown as {
@@ -21,6 +22,10 @@ export interface CreateBookingInput {
   venueAddress: string;
   eventType?: string;
   notes?: string | null;
+  materials?: Array<{
+    materialId: string;
+    quantity: number;
+  }>;
 }
 
 export async function createBookingSafe(input: CreateBookingInput) {
@@ -42,7 +47,19 @@ export async function createBookingSafe(input: CreateBookingInput) {
     throw new Error('Package not found');
   }
 
-  const totalAmount = pkg.price;
+  // 2. Calculate materials cost
+  let materialsCost = 0;
+  if (input.materials && input.materials.length > 0) {
+    for (const materialInput of input.materials) {
+      const material = await getMaterialByIdSafe(materialInput.materialId);
+      if (material) {
+        materialsCost += material.pricePerDay * materialInput.quantity;
+      }
+    }
+  }
+
+  const packageAmount = pkg.price;
+  const totalAmount = packageAmount + materialsCost;
   const advanceAmount = Math.round(totalAmount * 0.25);
   const balanceAmount = totalAmount - advanceAmount;
 
@@ -68,7 +85,7 @@ export async function createBookingSafe(input: CreateBookingInput) {
     package: pkg,
   };
 
-  // 2. Try database persist
+  // 3. Try database persist
   try {
     const dbBooking = await prisma.booking.create({
       data: {
@@ -89,12 +106,41 @@ export async function createBookingSafe(input: CreateBookingInput) {
       include: { package: true },
     });
 
-    inMemoryBookings.set(dbBooking.id, dbBooking);
-    return dbBooking;
+    // 4. Add materials to booking if any
+    let dbBookingMaterials: any[] = [];
+    if (input.materials && input.materials.length > 0) {
+      try {
+        dbBookingMaterials = await addMaterialsToBookingSafe(dbBooking.id, input.materials);
+      } catch (materialErr) {
+        console.warn('Failed to add materials to booking:', materialErr);
+      }
+    }
+
+    const fullDbBooking = {
+      ...dbBooking,
+      bookingMaterials: dbBookingMaterials,
+    };
+    inMemoryBookings.set(dbBooking.id, fullDbBooking);
+    return fullDbBooking;
   } catch (dbErr) {
     console.warn('Prisma createBooking failed, storing in resilient fallback store:', dbErr);
-    inMemoryBookings.set(bookingId, bookingData);
-    return bookingData;
+    
+    // Try to add materials to fallback booking
+    let fallbackMaterials: any[] = [];
+    if (input.materials && input.materials.length > 0) {
+      try {
+        fallbackMaterials = await addMaterialsToBookingSafe(bookingId, input.materials);
+      } catch (materialErr) {
+        console.warn('Failed to add materials to fallback booking:', materialErr);
+      }
+    }
+    
+    const fullFallbackBooking = {
+      ...bookingData,
+      bookingMaterials: fallbackMaterials,
+    };
+    inMemoryBookings.set(bookingId, fullFallbackBooking);
+    return fullFallbackBooking;
   }
 }
 
@@ -108,7 +154,12 @@ export async function getBookingByIdSafe(id: string) {
   try {
     const booking = await prisma.booking.findUnique({
       where: { id },
-      include: { package: true },
+      include: {
+        package: true,
+        bookingMaterials: {
+          include: { material: true },
+        },
+      },
     });
     if (booking) {
       inMemoryBookings.set(booking.id, booking);
@@ -140,7 +191,12 @@ export async function updateBookingStatusSafe(
     const dbUpdated = await prisma.booking.update({
       where: { id },
       data: updates,
-      include: { package: true },
+      include: {
+        package: true,
+        bookingMaterials: {
+          include: { material: true },
+        },
+      },
     });
     inMemoryBookings.set(id, dbUpdated);
     return dbUpdated;
@@ -156,7 +212,12 @@ export async function getAllBookingsSafe() {
 
   try {
     const dbBookings = await prisma.booking.findMany({
-      include: { package: true },
+      include: {
+        package: true,
+        bookingMaterials: {
+          include: { material: true },
+        },
+      },
       orderBy: { createdAt: 'desc' },
     });
     dbBookings.forEach((b) => map.set(b.id, b));

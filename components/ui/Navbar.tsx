@@ -23,7 +23,8 @@ export function Navbar() {
   const navLinks = [
     { href: '/', label: 'Experience' },
     { href: '/about', label: 'Legacy' },
-    { href: '/packages', label: 'Gear & Packages' },
+    { href: '/packages', label: 'Stage Packages' },
+    { href: '/packages?tab=materials', label: 'Materials Rent' },
     { href: '/gallery', label: 'Live Stages' },
     { href: '/contact', label: 'Contact' },
   ];

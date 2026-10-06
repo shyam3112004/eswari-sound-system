@@ -34,6 +34,13 @@ import {
   FolderPlus,
   X,
   MapPin,
+  Package,
+  Wrench,
+  ToggleLeft,
+  ToggleRight,
+  Lightbulb,
+  Wind,
+  Battery,
 } from 'lucide-react';
 import { formatINR } from '@/lib/utils';
 
@@ -44,7 +51,7 @@ export default function AdminDashboardPage() {
   const [bookings, setBookings] = useState<any[]>([]);
   const [inquiries, setInquiries] = useState<any[]>([]);
   const [blockedDates, setBlockedDates] = useState<any[]>([]);
-  const [activeTab, setActiveTab] = useState<'overview' | 'bookings' | 'inquiries' | 'calendar' | 'portfolio'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'bookings' | 'inquiries' | 'calendar' | 'portfolio' | 'materials'>('overview');
 
   // Form states for admin actions
   const [newBlackoutDate, setNewBlackoutDate] = useState('');
@@ -73,6 +80,17 @@ export default function AdminDashboardPage() {
   const [portEventDate, setPortEventDate] = useState('');
   const [activeMediaPreview, setActiveMediaPreview] = useState<any | null>(null);
 
+  // Materials management state
+  const [materials, setMaterials] = useState<any[]>([]);
+  const [matSubmitting, setMatSubmitting] = useState(false);
+  const [editingMaterial, setEditingMaterial] = useState<any | null>(null);
+  const [matName, setMatName] = useState('');
+  const [matCategory, setMatCategory] = useState('audio');
+  const [matDescription, setMatDescription] = useState('');
+  const [matPricePerDay, setMatPricePerDay] = useState<number>(100000);
+  const [matUnit, setMatUnit] = useState('unit');
+  const [matIsAvailable, setMatIsAvailable] = useState(true);
+
   const fetchData = async () => {
     setLoading(true);
     setActionMessage(null);
@@ -100,6 +118,10 @@ export default function AdminDashboardPage() {
       const portRes = await fetch('/api/admin/portfolio');
       const portData = await portRes.json();
       if (portData.success) setPortfolioItems(portData.items);
+
+      const matRes = await fetch('/api/admin/materials');
+      const matData = await matRes.json();
+      if (matData.success) setMaterials(matData.materials);
     } catch (err) {
       console.error('Failed to load admin dashboard data:', err);
     } finally {
@@ -211,7 +233,7 @@ export default function AdminDashboardPage() {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
       const tabParam = params.get('tab');
-      if (tabParam && ['overview', 'bookings', 'inquiries', 'calendar', 'portfolio'].includes(tabParam)) {
+      if (tabParam && ['overview', 'bookings', 'inquiries', 'calendar', 'portfolio', 'materials'].includes(tabParam)) {
         setActiveTab(tabParam as any);
       }
     }
@@ -392,7 +414,7 @@ export default function AdminDashboardPage() {
       )}
 
       {/* Stats Summary Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 my-8">
+      <div className="grid grid-cols-2 lg:grid-cols-6 gap-4 my-8">
         <div className="glass-card rounded-2xl p-5 border border-white/10">
           <span className="text-xs text-neutral-400 font-mono uppercase tracking-wider">
             Total Bookings
@@ -453,6 +475,26 @@ export default function AdminDashboardPage() {
           </div>
           <span className="text-[11px] text-neutral-300 mt-1 block">Live photos & videos (Admin)</span>
         </div>
+
+        <div
+          onClick={() => setActiveTab('materials')}
+          className="glass-card rounded-2xl p-5 border border-haze/30 bg-haze/5 hover:border-haze hover:bg-haze/10 transition-all cursor-pointer group"
+          title="Click to manage Materials"
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-haze font-mono uppercase tracking-wider flex items-center gap-1.5 font-bold">
+              <Package className="w-3.5 h-3.5" />
+              <span>Materials</span>
+            </span>
+            <span className="text-[10px] text-haze/70 font-mono group-hover:text-haze transition-colors">
+              Manage →
+            </span>
+          </div>
+          <div className="font-heading text-3xl font-bold text-white mt-1">
+            {materials.length}
+          </div>
+          <span className="text-[11px] text-neutral-300 mt-1 block">Rental items catalog</span>
+        </div>
       </div>
 
       {/* Navigation Tabs */}
@@ -463,6 +505,7 @@ export default function AdminDashboardPage() {
           { id: 'inquiries', label: 'Festival Inquiries & Quotes', icon: FileText },
           { id: 'calendar', label: 'Blackout Calendar Manager', icon: Clock },
           { id: 'portfolio', label: `Portfolio (${portfolioItems.length})`, icon: Film },
+          { id: 'materials', label: `Materials (${materials.length})`, icon: Package },
         ].map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -797,6 +840,23 @@ export default function AdminDashboardPage() {
                           {b.notes && (
                             <div className="text-xs text-amber-300/90 font-mono bg-black/40 p-2 rounded-xl border border-amber/20 mt-2">
                               Customer Notes: "{b.notes}"
+                            </div>
+                          )}
+
+                          {b.bookingMaterials && b.bookingMaterials.length > 0 && (
+                            <div className="mt-2.5 p-3 rounded-xl bg-white/5 border border-white/10 text-xs space-y-1.5">
+                              <div className="text-[11px] font-mono text-haze uppercase font-semibold flex items-center gap-1.5">
+                                <Package className="w-3.5 h-3.5 text-haze" />
+                                <span>Selected Equipment / Materials ({b.bookingMaterials.length} items):</span>
+                              </div>
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 pt-1 text-[11px] text-neutral-300 font-mono">
+                                {b.bookingMaterials.map((bm: any) => (
+                                  <div key={bm.id} className="flex justify-between bg-black/40 px-2 py-1 rounded border border-white/5">
+                                    <span>{bm.material?.name || 'Material'} × {bm.quantity}</span>
+                                    <span className="text-amber">{formatINR(bm.totalPrice || bm.pricePerDay * bm.quantity)}</span>
+                                  </div>
+                                ))}
+                              </div>
                             </div>
                           )}
                         </div>
@@ -1546,6 +1606,435 @@ export default function AdminDashboardPage() {
                         </div>
                       </div>
                     ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* TAB 6: MATERIALS MANAGER */}
+          {activeTab === 'materials' && (
+            <div className="space-y-8">
+              {/* Header */}
+              <div className="glass-card-amber rounded-3xl p-6 sm:p-8 border border-haze/30 shadow-2xl flex flex-col md:flex-row md:items-center justify-between gap-6">
+                <div className="space-y-2">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-haze/10 border border-haze/30 text-haze text-[11px] font-mono uppercase tracking-wider font-bold">
+                    <Package className="w-3.5 h-3.5" />
+                    <span>Admin • Materials Rental Catalog</span>
+                  </div>
+                  <h3 className="font-heading text-2xl font-bold text-white">
+                    Manage Rentable Materials & Day Rates
+                  </h3>
+                  <p className="text-xs sm:text-sm text-neutral-300 max-w-2xl">
+                    Add, edit, or disable individual rental items. Customers can browse and add materials to their bookings through the custom packages system.
+                  </p>
+                </div>
+                <div className="shrink-0">
+                  <a
+                    href="/packages"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl glass-card border border-haze/30 text-haze font-mono text-xs uppercase tracking-wider hover:bg-haze/10 transition-all font-semibold"
+                  >
+                    <span>View Public Catalog</span>
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
+                </div>
+              </div>
+
+              {/* Add / Edit Form */}
+              <div className="glass-card rounded-3xl p-6 sm:p-8 border border-white/10 space-y-6">
+                <div className="flex items-center gap-3 border-b border-white/10 pb-4">
+                  <div className="w-10 h-10 rounded-xl bg-haze/10 border border-haze/30 flex items-center justify-center text-haze">
+                    <Plus className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h4 className="font-heading text-lg font-bold text-white">
+                      {editingMaterial ? 'Edit Material' : 'Add New Rental Material'}
+                    </h4>
+                    <p className="text-xs text-neutral-400">
+                      {editingMaterial ? 'Update material details and pricing' : 'Add individual items to the rentable materials catalog'}
+                    </p>
+                  </div>
+                  {editingMaterial && (
+                    <button
+                      onClick={() => {
+                        setEditingMaterial(null);
+                        setMatName('');
+                        setMatCategory('audio');
+                        setMatDescription('');
+                        setMatPricePerDay(100000);
+                        setMatUnit('unit');
+                        setMatIsAvailable(true);
+                      }}
+                      className="ml-auto p-2 rounded-xl glass-card text-neutral-400 hover:text-white"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+
+                <form
+                  onSubmit={async (e) => {
+                    e.preventDefault();
+                    if (!matName || !matDescription) {
+                      alert('Please fill in name and description');
+                      return;
+                    }
+
+                    setMatSubmitting(true);
+                    try {
+                      const url = editingMaterial 
+                        ? `/api/materials/${editingMaterial.id}`
+                        : '/api/admin/materials';
+                      const method = editingMaterial ? 'PUT' : 'POST';
+
+                      const res = await fetch(url, {
+                        method,
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                          name: matName,
+                          category: matCategory,
+                          description: matDescription,
+                          pricePerDay: matPricePerDay,
+                          unit: matUnit,
+                          isAvailable: matIsAvailable,
+                        }),
+                      });
+
+                      const data = await res.json();
+                      if (data.success) {
+                        setActionMessage(
+                          editingMaterial 
+                            ? `Updated "${matName}" successfully!`
+                            : `Added "${matName}" to rental catalog!`
+                        );
+                        
+                        // Reset form
+                        setEditingMaterial(null);
+                        setMatName('');
+                        setMatDescription('');
+                        setMatPricePerDay(100000);
+                        setMatUnit('unit');
+                        setMatIsAvailable(true);
+                        
+                        // Refresh materials
+                        fetchData();
+                      } else {
+                        alert(data.error || 'Failed to save material');
+                      }
+                    } catch (err) {
+                      console.error(err);
+                      alert('Server error saving material');
+                    } finally {
+                      setMatSubmitting(false);
+                    }
+                  }}
+                  className="space-y-5"
+                >
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-mono uppercase text-neutral-400 mb-1">
+                        Material Name *
+                      </label>
+                      <input
+                        type="text"
+                        value={matName}
+                        onChange={(e) => setMatName(e.target.value)}
+                        placeholder="e.g. Line Array Speaker Box"
+                        className="w-full px-4 py-2.5 rounded-xl bg-ink border border-white/20 text-white text-xs"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-mono uppercase text-neutral-400 mb-1">
+                        Category *
+                      </label>
+                      <select
+                        value={matCategory}
+                        onChange={(e) => setMatCategory(e.target.value)}
+                        className="w-full px-4 py-2.5 rounded-xl bg-ink border border-white/20 text-white text-xs"
+                      >
+                        <option value="audio">🔊 Audio Equipment</option>
+                        <option value="lighting">💡 Lighting & Effects</option>
+                        <option value="staging">🎭 Staging & Structure</option>
+                        <option value="power">⚡ Power & Generators</option>
+                        <option value="effects">✨ Special Effects</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-mono uppercase text-neutral-400 mb-1">
+                      Description *
+                    </label>
+                    <textarea
+                      rows={2}
+                      value={matDescription}
+                      onChange={(e) => setMatDescription(e.target.value)}
+                      placeholder="e.g. Professional grade dual 12-inch line array speaker with rigging hardware"
+                      className="w-full px-4 py-2.5 rounded-xl bg-ink border border-white/20 text-white text-xs resize-none"
+                      required
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-xs font-mono uppercase text-neutral-400 mb-1">
+                        Price Per Day (₹) *
+                      </label>
+                      <input
+                        type="number"
+                        value={matPricePerDay / 100}
+                        onChange={(e) => setMatPricePerDay(Number(e.target.value) * 100)}
+                        placeholder="2500"
+                        className="w-full px-4 py-2.5 rounded-xl bg-ink border border-white/20 text-white text-xs font-mono"
+                        step="0.01"
+                        min="0"
+                        required
+                      />
+                      <p className="text-[11px] text-neutral-500 mt-1">
+                        Enter in rupees (e.g., 2500 for ₹2,500)
+                      </p>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-mono uppercase text-neutral-400 mb-1">
+                        Unit Type
+                      </label>
+                      <select
+                        value={matUnit}
+                        onChange={(e) => setMatUnit(e.target.value)}
+                        className="w-full px-4 py-2.5 rounded-xl bg-ink border border-white/20 text-white text-xs"
+                      >
+                        <option value="unit">Unit</option>
+                        <option value="set">Set</option>
+                        <option value="piece">Piece</option>
+                        <option value="box">Box</option>
+                        <option value="pair">Pair</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-mono uppercase text-neutral-400 mb-1">
+                        Availability Status
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => setMatIsAvailable(!matIsAvailable)}
+                        className={`w-full px-4 py-2.5 rounded-xl border text-xs font-semibold transition-all flex items-center justify-center gap-2 ${
+                          matIsAvailable
+                            ? 'bg-emerald-950/60 border-emerald-500/30 text-emerald-400'
+                            : 'bg-red-950/60 border-red-500/30 text-red-400'
+                        }`}
+                      >
+                        {matIsAvailable ? (
+                          <>
+                            <ToggleRight className="w-4 h-4" />
+                            <span>Available for Rent</span>
+                          </>
+                        ) : (
+                          <>
+                            <ToggleLeft className="w-4 h-4" />
+                            <span>Disabled / Out of Stock</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={matSubmitting}
+                    className="w-full py-3.5 rounded-xl bg-gradient-to-r from-haze to-haze-soft text-ink font-bold text-xs uppercase tracking-widest hover:brightness-110 transition-all shadow-xl shadow-haze/20 flex items-center justify-center gap-2 disabled:opacity-50"
+                  >
+                    {matSubmitting ? (
+                      <>
+                        <RefreshCw className="w-4 h-4 animate-spin" />
+                        <span>{editingMaterial ? 'Updating...' : 'Adding...'}</span>
+                      </>
+                    ) : (
+                      <>
+                        <Check className="w-4 h-4" />
+                        <span>{editingMaterial ? 'Update Material' : 'Add To Catalog'}</span>
+                      </>
+                    )}
+                  </button>
+                </form>
+              </div>
+
+              {/* Materials List */}
+              <div className="glass-card rounded-3xl p-6 sm:p-8 border border-white/10 space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-4">
+                  <div>
+                    <h4 className="font-heading text-xl font-bold text-white">
+                      Materials Catalog ({materials.length})
+                    </h4>
+                    <p className="text-xs text-neutral-400">
+                      All rental items organized by category with current pricing
+                    </p>
+                  </div>
+                </div>
+
+                {materials.length === 0 ? (
+                  <div className="py-16 text-center text-neutral-400 font-mono text-xs">
+                    No materials in catalog yet. Use the form above to add your first rental item!
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    {(
+                      Object.entries(
+                        materials.reduce((acc, material) => {
+                          const category = material.category;
+                          if (!acc[category]) acc[category] = [];
+                          acc[category].push(material);
+                          return acc;
+                        }, {} as Record<string, any[]>)
+                      ) as [string, any[]][]
+                    ).map(([category, items]) => {
+                      const categoryIcons: Record<string, React.ReactNode> = {
+                        audio: <Volume2 className="w-4 h-4 text-blue-400" />,
+                        lighting: <Lightbulb className="w-4 h-4 text-yellow-400" />,
+                        staging: <Layers className="w-4 h-4 text-purple-400" />,
+                        power: <Battery className="w-4 h-4 text-green-400" />,
+                        effects: <Wind className="w-4 h-4 text-pink-400" />,
+                      };
+
+                      return (
+                        <div key={category} className="space-y-3">
+                          <div className="flex items-center gap-2 py-2 border-b border-white/5">
+                            {categoryIcons[category]}
+                            <h5 className="font-heading text-base font-bold text-white capitalize">
+                              {category === 'audio' ? 'Audio Equipment' :
+                               category === 'lighting' ? 'Lighting & Effects' :
+                               category === 'staging' ? 'Staging & Structure' :
+                               category === 'power' ? 'Power & Generators' :
+                               category === 'effects' ? 'Special Effects' : category}
+                            </h5>
+                            <span className="text-xs text-neutral-400 font-mono">
+                              ({items.length} items)
+                            </span>
+                          </div>
+
+                          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                            {items.map((material) => (
+                              <div
+                                key={material.id}
+                                className={`p-4 rounded-2xl border transition-all ${
+                                  material.isAvailable
+                                    ? 'bg-white/5 border-white/10 hover:border-white/20'
+                                    : 'bg-red-950/10 border-red-500/20'
+                                }`}
+                              >
+                                <div className="flex items-start justify-between mb-2">
+                                  <div className="flex-1">
+                                    <h6 className="font-heading text-sm font-bold text-white">
+                                      {material.name}
+                                    </h6>
+                                    <p className="text-xs text-neutral-400 mt-1 line-clamp-2">
+                                      {material.description}
+                                    </p>
+                                  </div>
+                                  <span
+                                    className={`ml-3 px-2 py-0.5 rounded-full text-[10px] font-mono font-bold shrink-0 ${
+                                      material.isAvailable
+                                        ? 'bg-emerald-950/70 text-emerald-400 border border-emerald-500/30'
+                                        : 'bg-red-950/70 text-red-400 border border-red-500/30'
+                                    }`}
+                                  >
+                                    {material.isAvailable ? 'Available' : 'Disabled'}
+                                  </span>
+                                </div>
+
+                                <div className="flex items-center justify-between pt-2 border-t border-white/5">
+                                  <div className="text-xs font-mono">
+                                    <span className="text-neutral-400">Rate: </span>
+                                    <span className="text-amber font-bold">
+                                      {formatINR(material.pricePerDay)}/{material.unit}/day
+                                    </span>
+                                  </div>
+
+                                  <div className="flex items-center gap-1">
+                                    <button
+                                      onClick={async () => {
+                                        try {
+                                          const res = await fetch('/api/admin/materials', {
+                                            method: 'PATCH',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify({
+                                              id: material.id,
+                                              isAvailable: !material.isAvailable,
+                                            }),
+                                          });
+                                          const data = await res.json();
+                                          if (data.success) {
+                                            setActionMessage(`"${material.name}" is now ${!material.isAvailable ? 'available' : 'disabled'}.`);
+                                            fetchData();
+                                          }
+                                        } catch (err) {
+                                          console.error(err);
+                                        }
+                                      }}
+                                      className={`p-1.5 rounded-lg transition-colors ${
+                                        material.isAvailable
+                                          ? 'text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10'
+                                          : 'text-neutral-500 hover:text-emerald-400 hover:bg-white/10'
+                                      }`}
+                                      title={material.isAvailable ? 'Click to disable / hide' : 'Click to enable / show'}
+                                    >
+                                      {material.isAvailable ? <ToggleRight className="w-4 h-4" /> : <ToggleLeft className="w-4 h-4" />}
+                                    </button>
+
+                                    <button
+                                      onClick={() => {
+                                        setEditingMaterial(material);
+                                        setMatName(material.name);
+                                        setMatCategory(material.category);
+                                        setMatDescription(material.description);
+                                        setMatPricePerDay(material.pricePerDay);
+                                        setMatUnit(material.unit);
+                                        setMatIsAvailable(material.isAvailable);
+                                        window.scrollTo({ top: 400, behavior: 'smooth' });
+                                      }}
+                                      className="p-1.5 rounded-lg text-neutral-400 hover:text-amber hover:bg-amber/10 transition-colors"
+                                      title="Edit material"
+                                    >
+                                      <Edit3 className="w-3.5 h-3.5" />
+                                    </button>
+
+                                    <button
+                                      onClick={async () => {
+                                        if (!confirm(`Delete "${material.name}" from catalog?`)) return;
+                                        try {
+                                          const res = await fetch(`/api/materials/${material.id}`, {
+                                            method: 'DELETE',
+                                          });
+                                          const data = await res.json();
+                                          if (data.success) {
+                                            setActionMessage(`Deleted "${material.name}" from catalog.`);
+                                            fetchData();
+                                          } else {
+                                            alert(data.error || 'Failed to delete');
+                                          }
+                                        } catch (err) {
+                                          console.error(err);
+                                          alert('Delete error');
+                                        }
+                                      }}
+                                      className="p-1.5 rounded-lg text-neutral-400 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                                      title="Delete material"
+                                    >
+                                      <Trash2 className="w-3.5 h-3.5" />
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 )}
               </div>

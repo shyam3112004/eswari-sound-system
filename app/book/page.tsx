@@ -19,13 +19,14 @@ import {
   User,
 } from 'lucide-react';
 import { formatINR } from '@/lib/utils';
+import MaterialsSelection from '@/components/ui/MaterialsSelection';
 
 function BookingFlow() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const initialPackageSlug = searchParams.get('package') || 'premium-dj';
 
-  const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
   const [packages, setPackages] = useState<any[]>([]);
   const [loadingPackages, setLoadingPackages] = useState(true);
 
@@ -45,6 +46,12 @@ function BookingFlow() {
     eventType: 'Wedding Reception',
     notes: '',
   });
+
+  // Materials selection state
+  const [selectedMaterials, setSelectedMaterials] = useState<Array<{
+    material: any;
+    quantity: number;
+  }>>([]);
 
   const [submitting, setSubmitting] = useState(false);
   const [bookingSuccess, setBookingSuccess] = useState<any | null>(null);
@@ -74,12 +81,31 @@ function BookingFlow() {
         }
       })
       .catch(() => {});
+
+    // Load pre-selected materials from sessionStorage (from catalog "Book as Custom Package")
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = sessionStorage.getItem('customPackageMaterials');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setSelectedMaterials(parsed);
+          }
+        }
+      } catch (e) {
+        console.error('Failed to parse customPackageMaterials:', e);
+      }
+    }
   }, []);
 
-  // Update selected package if URL param changes
+  // Update selected package if URL param changes or if materials were pre-selected
   useEffect(() => {
     const pkg = searchParams.get('package');
-    if (pkg) setSelectedPackageSlug(pkg);
+    if (pkg) {
+      setSelectedPackageSlug(pkg);
+    } else if (typeof window !== 'undefined' && sessionStorage.getItem('customPackageMaterials')) {
+      setSelectedPackageSlug('custom-rig');
+    }
   }, [searchParams]);
 
   // Handle Date Verification
@@ -112,8 +138,18 @@ function BookingFlow() {
     }
   };
 
-  const selectedPackage = packages.find((p) => p.slug === selectedPackageSlug) || packages[0];
-  const totalAmount = selectedPackage ? selectedPackage.price : 2500000;
+  const isCustomRig = selectedPackageSlug === 'custom-rig';
+  const selectedPackage = packages.find((p) => p.slug === selectedPackageSlug) || (isCustomRig ? {
+    id: 'custom-rig',
+    slug: 'custom-rig',
+    name: 'Custom Rig (Choose Materials)',
+    price: 0,
+    description: 'Custom setup configured from selected rental materials. Total price is calculated dynamically.',
+  } : packages[0]);
+
+  const packageAmount = isCustomRig ? 0 : (selectedPackage ? selectedPackage.price : 2500000);
+  const materialsAmount = selectedMaterials.reduce((total, sm) => total + (sm.material.pricePerDay * sm.quantity), 0);
+  const totalAmount = packageAmount + materialsAmount;
   const advanceAmount = Math.round(totalAmount * 0.25);
   const balanceAmount = totalAmount - advanceAmount;
 
@@ -121,6 +157,18 @@ function BookingFlow() {
   const handleBookingSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setBookingError(null);
+
+    if (isCustomRig && selectedMaterials.length === 0) {
+      setBookingError('Please select at least 1 material in Step 3 to configure your custom package.');
+      setStep(3);
+      return;
+    }
+
+    if (totalAmount <= 0) {
+      setBookingError('Total booking amount cannot be ₹0. Please choose rental materials.');
+      return;
+    }
+
     setSubmitting(true);
 
     try {
@@ -133,6 +181,10 @@ function BookingFlow() {
         venueAddress: formData.venueAddress,
         eventType: formData.eventType,
         notes: formData.notes,
+        materials: selectedMaterials.map(sm => ({
+          materialId: sm.material.id,
+          quantity: sm.quantity,
+        })),
       };
 
       const res = await fetch('/api/bookings', {
@@ -147,6 +199,9 @@ function BookingFlow() {
         throw new Error(data.error || 'Failed to submit booking draft');
       }
 
+      if (typeof window !== 'undefined') {
+        sessionStorage.removeItem('customPackageMaterials');
+      }
       setBookingSuccess(data.booking);
     } catch (err: any) {
       setBookingError(err.message || 'Booking submission error');
@@ -276,13 +331,14 @@ function BookingFlow() {
           {[
             { num: 1, label: 'Date Check' },
             { num: 2, label: 'Select Package' },
-            { num: 3, label: 'Venue Details' },
+            { num: 3, label: 'Materials' },
+            { num: 4, label: 'Venue Details' },
           ].map((s) => (
             <div key={s.num} className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={() => {
-                  if (s.num < step || (s.num === 2 && dateAvailable) || (s.num === 3 && dateAvailable)) {
+                  if (s.num < step || (s.num === 2 && dateAvailable) || (s.num === 3 && dateAvailable) || (s.num === 4 && dateAvailable)) {
                     setStep(s.num as any);
                   }
                 }}
@@ -299,7 +355,7 @@ function BookingFlow() {
               <span className="text-xs font-mono text-neutral-400 hidden sm:inline">
                 {s.label}
               </span>
-              {s.num < 3 && <span className="text-neutral-600 hidden sm:inline">—</span>}
+              {s.num < 4 && <span className="text-neutral-600 hidden sm:inline">—</span>}
             </div>
           ))}
         </div>
@@ -409,13 +465,17 @@ function BookingFlow() {
               <div className="space-y-4 pt-2">
                 {packages.map((pkg) => {
                   const isSelected = selectedPackageSlug === pkg.slug;
+                  const isPkgCustom = pkg.slug === 'custom-rig';
+
                   return (
                     <div
                       key={pkg.id}
                       onClick={() => setSelectedPackageSlug(pkg.slug)}
                       className={`p-5 rounded-2xl border cursor-pointer transition-all ${
                         isSelected
-                          ? 'glass-card-amber border-amber shadow-lg shadow-amber/15'
+                          ? isPkgCustom
+                            ? 'glass-card-amber border-haze shadow-lg shadow-haze/15'
+                            : 'glass-card-amber border-amber shadow-lg shadow-amber/15'
                           : 'bg-white/5 border-white/10 hover:border-white/20'
                       }`}
                     >
@@ -423,17 +483,26 @@ function BookingFlow() {
                         <div className="flex items-center gap-2">
                           <span
                             className={`w-4 h-4 rounded-full border flex items-center justify-center ${
-                              isSelected ? 'border-amber bg-amber' : 'border-neutral-500'
+                              isSelected
+                                ? isPkgCustom
+                                  ? 'border-haze bg-haze'
+                                  : 'border-amber bg-amber'
+                                : 'border-neutral-500'
                             }`}
                           >
                             {isSelected && <span className="w-1.5 h-1.5 rounded-full bg-ink" />}
                           </span>
-                          <span className="font-heading text-base font-bold text-white">
-                            {pkg.name}
+                          <span className="font-heading text-base font-bold text-white flex items-center gap-2">
+                            <span>{pkg.name}</span>
+                            {isPkgCustom && (
+                              <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-haze/20 border border-haze/40 text-haze font-bold">
+                                Build Your Own
+                              </span>
+                            )}
                           </span>
                         </div>
-                        <span className="font-heading text-base font-bold text-amber">
-                          {formatINR(pkg.price)}
+                        <span className={`font-heading text-base font-bold ${isPkgCustom ? 'text-haze' : 'text-amber'}`}>
+                          {isPkgCustom ? 'Dynamic (₹0 Base)' : formatINR(pkg.price)}
                         </span>
                       </div>
 
@@ -442,10 +511,27 @@ function BookingFlow() {
                       </p>
 
                       <div className="pl-6 text-[11px] text-neutral-400 font-mono flex items-center gap-4">
-                        <span>Advance: <strong className="text-white">{formatINR(pkg.price * 0.25)}</strong></span>
-                        <span>•</span>
-                        <span>Balance: <strong className="text-neutral-300">{formatINR(pkg.price * 0.75)}</strong></span>
+                        {isPkgCustom ? (
+                          <>
+                            <span>Advance: <strong className="text-haze">25% of Materials Total</strong></span>
+                            <span>•</span>
+                            <span>Balance: <strong className="text-neutral-300">75% on-site</strong></span>
+                          </>
+                        ) : (
+                          <>
+                            <span>Advance: <strong className="text-white">{formatINR(pkg.price * 0.25)}</strong></span>
+                            <span>•</span>
+                            <span>Balance: <strong className="text-neutral-300">{formatINR(pkg.price * 0.75)}</strong></span>
+                          </>
+                        )}
                       </div>
+
+                      {isSelected && isPkgCustom && (
+                        <div className="mt-3 ml-6 p-2.5 rounded-xl bg-haze/10 border border-haze/30 text-xs text-haze font-mono flex items-center gap-2">
+                          <span>🛠️</span>
+                          <span>Custom Rig selected. In the next step, select the exact equipment and quantities needed.</span>
+                        </div>
+                      )}
                     </div>
                   );
                 })}
@@ -465,7 +551,7 @@ function BookingFlow() {
                     onClick={() => setStep(3)}
                     className="px-6 py-3 rounded-full bg-gradient-to-r from-amber to-amber-soft text-ink font-semibold text-xs uppercase tracking-wider hover:brightness-110 flex items-center gap-2 shadow-lg shadow-amber/20"
                   >
-                    <span>Proceed To Venue Details</span>
+                    <span>{isCustomRig ? 'Choose Custom Materials' : 'Continue to Materials'}</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </button>
                 </div>
@@ -473,8 +559,19 @@ function BookingFlow() {
             </div>
           )}
 
-          {/* STEP 3: CLIENT & VENUE DETAILS */}
+          {/* STEP 3: MATERIALS SELECTION */}
           {step === 3 && (
+            <MaterialsSelection
+              selectedMaterials={selectedMaterials}
+              onMaterialsChange={setSelectedMaterials}
+              onNext={() => setStep(4)}
+              onBack={() => setStep(2)}
+              isCustomPackage={isCustomRig}
+            />
+          )}
+
+          {/* STEP 4: CLIENT & VENUE DETAILS */}
+          {step === 4 && (
             <div className="glass-card rounded-3xl p-8 border border-white/10 space-y-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -493,10 +590,10 @@ function BookingFlow() {
 
                 <button
                   type="button"
-                  onClick={() => setStep(2)}
+                  onClick={() => setStep(3)}
                   className="text-xs font-mono text-neutral-400 hover:text-white"
                 >
-                  Change Rig
+                  Change Materials
                 </button>
               </div>
 
@@ -598,11 +695,11 @@ function BookingFlow() {
                 <div className="flex justify-between items-center pt-4">
                   <button
                     type="button"
-                    onClick={() => setStep(2)}
+                    onClick={() => setStep(3)}
                     className="inline-flex items-center gap-1.5 text-xs font-mono text-neutral-400 hover:text-white"
                   >
                     <ArrowLeft className="w-3.5 h-3.5" />
-                    <span>Back to Packages</span>
+                    <span>Back to Materials</span>
                   </button>
 
                   <button
@@ -652,8 +749,36 @@ function BookingFlow() {
               </div>
 
               <div className="flex justify-between">
-                <span className="text-neutral-400 font-mono">Day Rate:</span>
-                <span className="text-white font-mono">{formatINR(totalAmount)}</span>
+                <span className="text-neutral-400 font-mono">Package Rate:</span>
+                <span className="text-white font-mono">
+                  {isCustomRig ? '₹0 (Custom Rig Base)' : formatINR(packageAmount)}
+                </span>
+              </div>
+
+              {selectedMaterials.length > 0 ? (
+                <>
+                  <div className="flex justify-between">
+                    <span className="text-neutral-400 font-mono">Materials ({selectedMaterials.length}):</span>
+                    <span className="text-haze font-mono">{formatINR(materialsAmount)}</span>
+                  </div>
+                  <div className="pl-4 space-y-1 text-[11px] max-h-36 overflow-y-auto">
+                    {selectedMaterials.map((sm) => (
+                      <div key={sm.material.id} className="flex justify-between text-neutral-400">
+                        <span>{sm.material.name} × {sm.quantity}</span>
+                        <span className="text-neutral-300 font-mono">{formatINR(sm.material.pricePerDay * sm.quantity)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              ) : isCustomRig ? (
+                <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber text-[11px] font-mono">
+                  ⚠️ No materials chosen yet. Please pick gear in Step 3.
+                </div>
+              ) : null}
+
+              <div className="flex justify-between pt-2 border-t border-white/5">
+                <span className="text-neutral-400 font-mono font-bold">Total Day Rate:</span>
+                <span className="text-white font-mono font-bold">{formatINR(totalAmount)}</span>
               </div>
             </div>
 

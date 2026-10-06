@@ -86,6 +86,26 @@ const FALLBACK_PACKAGES = [
     createdAt: new Date(),
     updatedAt: new Date(),
   },
+  {
+    id: 'custom-rig',
+    slug: 'custom-rig',
+    name: 'Custom Rig (Choose Materials)',
+    category: 'combo',
+    description: 'Build your own custom setup by selecting individual rental materials. Total price is calculated dynamically from your material choices with no fixed package minimum.',
+    features: [
+      'Choose from Audio, Lighting, Staging, Power & Effects',
+      'Mix and match any quantity of equipment',
+      'Pay only for what you select (₹0 base package fee)',
+      'Delivery, rigging & retrieval included',
+      'Lock your date with a 25% advance deposit',
+    ],
+    price: 0,
+    image: null,
+    isPopular: false,
+    sortOrder: 5,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
 ];
 
 export async function getAllPackages() {

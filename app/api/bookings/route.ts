@@ -48,6 +48,7 @@ export async function POST(request: NextRequest) {
       venueAddress: data.venueAddress,
       eventType: data.eventType,
       notes: data.notes,
+      materials: data.materials,
     });
 
     // Notify staff/admin immediately so they can call customer to confirm
@@ -120,7 +121,12 @@ export async function GET(request: NextRequest) {
 
     const bookings = await prisma.booking.findMany({
       where: whereClause,
-      include: { package: true },
+      include: {
+        package: true,
+        bookingMaterials: {
+          include: { material: true },
+        },
+      },
       orderBy: { createdAt: 'desc' },
       take: 50,
     });

@@ -13,6 +13,10 @@ export const bookingSchema = z.object({
   venueAddress: z.string().min(5, 'Full venue address is required'),
   eventType: z.string().optional(),
   notes: z.string().max(500, 'Notes must be under 500 characters').optional(),
+  materials: z.array(z.object({
+    materialId: z.string(),
+    quantity: z.number().min(1),
+  })).optional(),
 });
 
 export const inquirySchema = z.object({

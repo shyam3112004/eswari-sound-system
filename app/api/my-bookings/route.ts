@@ -44,6 +44,7 @@ export async function GET(request: NextRequest) {
       balanceAmount: b.balanceAmount,
       status: b.status,
       paymentStatus: b.paymentStatus,
+      bookingMaterials: b.bookingMaterials || [],
       createdAt: b.createdAt,
     }));
 

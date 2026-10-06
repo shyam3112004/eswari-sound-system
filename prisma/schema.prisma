@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -50,6 +50,8 @@ model Booking {
   notes             String?
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
+
+  bookingMaterials  BookingMaterial[]
 }
 
 model Inquiry {
@@ -94,5 +96,35 @@ model PortfolioItem {
   sortOrder    Int       @default(0)
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
+}
+
+model Material {
+  id           String   @id @default(uuid())
+  name         String
+  category     String   // e.g. "audio", "lighting", "staging", "effects", "power"
+  description  String
+  pricePerDay  Int      // in paise (₹)
+  unit         String   @default("unit") // e.g. "unit", "set", "piece", "box"
+  isAvailable  Boolean  @default(true)
+  sortOrder    Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  bookingMaterials BookingMaterial[]
+}
+
+model BookingMaterial {
+  id        String   @id @default(uuid())
+  bookingId String
+  materialId String
+  quantity  Int      @default(1)
+  pricePerDay Int    // snapshot of material price at booking time
+  totalPrice Int     // quantity * pricePerDay
+  createdAt DateTime @default(now())
+
+  booking   Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  material  Material @relation(fields: [materialId], references: [id])
+
+  @@unique([bookingId, materialId])
 }
 
