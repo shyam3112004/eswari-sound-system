@@ -35,7 +35,7 @@ export const metadata: Metadata = {
     'Event Sound Engineer',
   ],
   authors: [{ name: 'Eswari Sound System' }],
-  metadataBase: new URL('http://localhost:3000'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://eswari-sound-system.vercel.app'),
   openGraph: {
     title: 'Eswari Sound System | Concert Audio & Stage Rigging',
     description:

@@ -83,7 +83,7 @@ export async function sendBookingReceiptEmail(params: {
 
             <div style="background: #171717; padding: 16px; border-radius: 12px; border: 1px solid #262626; text-align: center; margin-bottom: 24px;">
               <p style="color: #A3A3A3; font-size: 12px; margin: 0 0 8px 0;">Need to view invoice or update logistics?</p>
-              <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://eswari-sound-system-q6l5.vercel.app'}/my-bookings" style="display: inline-block; background: #FFB11A; color: #0B0B0F; font-size: 12px; font-weight: bold; text-decoration: none; padding: 8px 18px; border-radius: 20px;">
+              <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://eswari-sound-system.vercel.app'}/my-bookings" style="display: inline-block; background: #FFB11A; color: #0B0B0F; font-size: 12px; font-weight: bold; text-decoration: none; padding: 8px 18px; border-radius: 20px;">
                 Check Live Booking Status
               </a>
             </div>
@@ -143,7 +143,7 @@ export async function sendAdminNewBookingAlert(params: {
           </ul>
 
           <div style="margin-top: 20px;">
-            <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://eswari-sound-system-q6l5.vercel.app'}/admin" style="display: inline-block; background: #FFB11A; color: #0B0B0F; padding: 10px 20px; text-decoration: none; font-weight: bold; border-radius: 8px;">
+            <a href="${process.env.NEXT_PUBLIC_SITE_URL || 'https://eswari-sound-system.vercel.app'}/admin" style="display: inline-block; background: #FFB11A; color: #0B0B0F; padding: 10px 20px; text-decoration: none; font-weight: bold; border-radius: 8px;">
               Open Admin Console to Confirm Order →
             </a>
           </div>
