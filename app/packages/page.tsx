@@ -3,53 +3,34 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import {
-  Volume2,
-  Zap,
-  Layers,
-  SlidersHorizontal,
-  CheckCircle2,
-  ArrowRight,
-  ShieldCheck,
-  Calendar,
-  Sparkles,
-  Package,
-  Plus,
-  Minus,
-  ShoppingCart,
-  Wrench,
-  Lightbulb,
-  Cpu,
-  Wind,
-  Battery,
-  X,
-  Loader2,
-} from 'lucide-react';
+import { ArrowRight, CheckCircle2, X, Loader2 } from 'lucide-react';
 import { formatINR } from '@/lib/utils';
+import {
+  MaterialCard,
+  ManagePhotosModal,
+  AddEditEquipmentModal,
+  MaterialLightbox,
+  useAdminStatus,
+  type Material,
+} from '@/components/ui/MaterialsSelection';
 
-const CATEGORY_ICONS: Record<string, React.ReactNode> = {
-  audio: <Volume2 className="w-3.5 h-3.5" />,
-  lighting: <Lightbulb className="w-3.5 h-3.5" />,
-  staging: <Layers className="w-3.5 h-3.5" />,
-  effects: <Wind className="w-3.5 h-3.5" />,
-  power: <Battery className="w-3.5 h-3.5" />,
-};
-
-const CATEGORY_COLORS: Record<string, string> = {
-  audio: 'text-amber',
-  lighting: 'text-yellow-400',
-  staging: 'text-haze',
-  effects: 'text-purple-400',
-  power: 'text-emerald-400',
-};
+const PACKAGE_CATEGORIES = [
+  { id: 'all', label: 'All event rigs' },
+  { id: 'materials-rent', label: 'Rent materials by item' },
+  { id: 'custom', label: 'Custom packages' },
+  { id: 'audio', label: 'Audio only' },
+  { id: 'lighting', label: 'Stage lighting' },
+  { id: 'combo', label: 'Audio + lighting' },
+];
 
 function PackagesContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const tabParam = searchParams.get('tab');
 
+  const { isAdmin } = useAdminStatus();
   const [packages, setPackages] = useState<any[]>([]);
-  const [materials, setMaterials] = useState<any[]>([]);
+  const [materials, setMaterials] = useState<Material[]>([]);
   const [loading, setLoading] = useState(true);
   const [materialsLoading, setMaterialsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'packages' | 'materials'>(
@@ -60,6 +41,165 @@ function PackagesContent() {
 
   // Materials rental state: { [materialId]: quantity }
   const [cart, setCart] = useState<Record<string, number>>({});
+
+  // Admin inline & photo management states
+  const [uploadingFor, setUploadingFor] = useState<string | null>(null);
+  const [managing, setManaging] = useState<Material | null>(null);
+  const [editor, setEditor] = useState<{
+    mode: 'new' | 'edit';
+    material?: Material;
+    initialCategory?: string;
+  } | null>(null);
+  const [lightbox, setLightbox] = useState<{ material: Material; index: number } | null>(null);
+  const [toast, setToast] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  const showToast = (type: 'success' | 'error', text: string) => setToast({ type, text });
+
+  useEffect(() => {
+    if (!toast) return;
+    const t = setTimeout(() => setToast(null), 3500);
+    return () => clearTimeout(t);
+  }, [toast]);
+
+  useEffect(() => {
+    if (!lightbox) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setLightbox(null);
+        return;
+      }
+      const imgs = lightbox.material.images || [];
+      if (imgs.length < 2) return;
+      if (e.key === 'ArrowRight') {
+        setLightbox({ material: lightbox.material, index: (lightbox.index + 1) % imgs.length });
+      } else if (e.key === 'ArrowLeft') {
+        setLightbox({
+          material: lightbox.material,
+          index: (lightbox.index - 1 + imgs.length) % imgs.length,
+        });
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [lightbox]);
+
+  const refreshMaterials = async () => {
+    try {
+      const res = await fetch('/api/materials');
+      const data = await res.json();
+      if (data.success) {
+        setMaterials(data.materials);
+      }
+    } catch (err) {
+      console.error('Failed to reload materials:', err);
+    }
+  };
+
+  const uploadFiles = async (files: File[]): Promise<string[]> => {
+    const urls: string[] = [];
+    for (const f of files) {
+      if (!['image/jpeg', 'image/png', 'image/webp'].includes(f.type)) {
+        showToast('error', 'Only JPG, PNG or WebP images are allowed.');
+        continue;
+      }
+      if (f.size > 5 * 1024 * 1024) {
+        showToast('error', `"${f.name}" exceeds the 5 MB limit.`);
+        continue;
+      }
+      const fd = new FormData();
+      fd.append('file', f);
+      fd.append('folder', 'materials');
+      try {
+        const res = await fetch('/api/admin/upload', { method: 'POST', body: fd });
+        if (res.status === 401) {
+          showToast('error', 'Unauthorized. Admin session required.');
+          return urls;
+        }
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && data.success) {
+          urls.push(data.url);
+        } else {
+          showToast('error', data.error || 'Upload failed.');
+        }
+      } catch {
+        showToast('error', 'Network error during upload.');
+      }
+    }
+    return urls;
+  };
+
+  const uploadImagesToMaterial = async (materialId: string, files: File[]) => {
+    const target = materials.find((m) => m.id === materialId);
+    if (!target) return;
+    setUploadingFor(materialId);
+    try {
+      const newUrls = await uploadFiles(files);
+      if (!newUrls.length) return;
+      const combined = [...(target.images || []), ...newUrls];
+      const ok = await saveMaterialImages(materialId, combined);
+      if (ok) {
+        showToast('success', `${newUrls.length} photo${newUrls.length > 1 ? 's' : ''} uploaded.`);
+      }
+    } finally {
+      setUploadingFor(null);
+    }
+  };
+
+  const saveMaterialImages = async (materialId: string, images: string[]): Promise<boolean> => {
+    try {
+      const res = await fetch('/api/admin/materials', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: materialId, images }),
+      });
+      if (res.status === 401) {
+        showToast('error', 'Unauthorized. Admin session required.');
+        return false;
+      }
+      const data = await res.json().catch(() => ({}));
+      if (!data.success) {
+        showToast('error', data.error || 'Failed to update photos.');
+        return false;
+      }
+      await refreshMaterials();
+      return true;
+    } catch {
+      showToast('error', 'Network error.');
+      return false;
+    }
+  };
+
+  const deleteMaterial = async (m: Material) => {
+    if (
+      !confirm(
+        `Are you sure you want to delete "${m.name}"? This removes its uploaded photos from disk and cannot be undone.`
+      )
+    ) {
+      return;
+    }
+    try {
+      const res = await fetch(`/api/admin/materials?id=${encodeURIComponent(m.id)}`, {
+        method: 'DELETE',
+      });
+      if (res.status === 401) {
+        showToast('error', 'Unauthorized. Admin session required.');
+        return;
+      }
+      const data = await res.json().catch(() => ({}));
+      if (!data.success) {
+        showToast('error', data.error || 'Failed to delete material.');
+        return;
+      }
+      showToast('success', `Deleted "${m.name}".`);
+      setCart((prev) => {
+        const { [m.id]: _, ...rest } = prev;
+        return rest;
+      });
+      await refreshMaterials();
+    } catch {
+      showToast('error', 'Network error while deleting material.');
+    }
+  };
 
   // Sync tab with URL search parameter reactively
   useEffect(() => {
@@ -87,15 +227,6 @@ function PackagesContent() {
       .catch((err) => console.error('Failed to load materials:', err))
       .finally(() => setMaterialsLoading(false));
   }, []);
-
-  const packageCategories = [
-    { id: 'all', label: 'All Event Rigs' },
-    { id: 'materials-rent', label: 'Rent Materials by Item' },
-    { id: 'custom', label: 'Custom Packages' },
-    { id: 'audio', label: 'Audio Only' },
-    { id: 'lighting', label: 'Stage Lighting' },
-    { id: 'combo', label: 'Audio + Lighting Combos' },
-  ];
 
   const filteredPackages =
     activeCategory === 'all'
@@ -132,18 +263,6 @@ function PackagesContent() {
     router.push('/book?package=custom-rig');
   };
 
-  const setQty = (id: string, delta: number) => {
-    setCart((prev) => {
-      const current = prev[id] || 0;
-      const next = Math.max(0, current + delta);
-      if (next === 0) {
-        const { [id]: _, ...rest } = prev;
-        return rest;
-      }
-      return { ...prev, [id]: next };
-    });
-  };
-
   const clearCart = () => setCart({});
 
   // Build WhatsApp inquiry message from cart
@@ -158,576 +277,559 @@ function PackagesContent() {
       .filter(Boolean);
 
     return encodeURIComponent(
-      `Hi Eswari Sound System, I'd like to rent the following materials:\n\n${lines.join('\n')}\n\nTotal: ${formatINR(cartTotal)}/day\n\nPlease confirm availability and provide a full quote.`
+      `Hi Eswari Sound System, I'd like to rent the following materials:\n\n${lines.join(
+        '\n'
+      )}\n\nTotal: ${formatINR(cartTotal)}/day\n\nPlease confirm availability and provide a full quote.`
     );
   };
 
   return (
-    <div className="min-h-screen bg-ink text-white py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-      {/* Header */}
-      <div className="text-center max-w-3xl mx-auto mb-12 space-y-4">
-        <div className="flex items-center justify-center gap-2 text-amber text-xs font-mono uppercase tracking-[0.25em]">
-          <ShieldCheck className="w-3.5 h-3.5 text-amber" />
-          <span>DIRECT PROVIDER • 100% IN-HOUSE INVENTORY</span>
+    <div className="min-h-screen bg-ink text-white">
+      {/* ── Header ─────────────────────────────────────────── */}
+      <div className="container-page pt-24 lg:pt-32">
+        <div className="max-w-3xl">
+          <span className="label label-amber">
+            Direct provider · 100% in-house inventory
+          </span>
+          <h1 className="font-heading text-h1 text-white mt-4">
+            Concert-grade stage rigs
+            <span className="text-amber"> and day rates</span>
+          </h1>
+          <p className="mt-5 text-body text-fg-muted leading-relaxed max-w-measure">
+            No hidden transport lines. A 25% advance holds the date on the
+            operations calendar; the balance is settled on site after sound-check.
+          </p>
         </div>
-
-        <h1 className="font-heading text-4xl sm:text-6xl font-black text-white tracking-tight">
-          Concert-Grade Stage <span className="text-gradient-amber">Rigs &amp; Day Rates</span>
-        </h1>
-
-        <p className="text-sm sm:text-base text-neutral-300 font-normal leading-relaxed max-w-2xl mx-auto">
-          Zero hidden fees. Lock your desired date with an instant 25% deposit. Remaining balance is settled on-site post acoustic sound-check.
-        </p>
 
         {/* Main Tab Switch: Packages / Materials Rent */}
-        <div className="flex justify-center pt-4 pb-2">
-          <div className="inline-flex p-1.5 rounded-full bg-black/80 border-2 border-amber/40 backdrop-blur-xl">
-            <button
-              id="tab-btn-packages"
-              onClick={() => {
-                setActiveTab('packages');
-                router.replace('/packages', { scroll: false });
-              }}
-              className={`flex items-center gap-2.5 px-6 sm:px-8 py-3 rounded-full text-xs sm:text-sm font-heading uppercase tracking-wider font-extrabold transition-all duration-300 ${
-                activeTab === 'packages'
-                  ? 'bg-amber text-ink scale-100'
-                  : 'text-neutral-400 hover:text-white hover:bg-white/10'
-              }`}
-            >
-              <Layers className="w-4 h-4" />
-              <span>Full Stage Packages</span>
-            </button>
-            <button
-              id="tab-btn-materials"
-              onClick={() => {
-                setActiveTab('materials');
-                router.replace('/packages?tab=materials', { scroll: false });
-              }}
-              className={`flex items-center gap-2.5 px-6 sm:px-8 py-3 rounded-full text-xs sm:text-sm font-heading uppercase tracking-wider font-extrabold transition-all duration-300 ${
-                activeTab === 'materials'
-                  ? 'bg-amber text-ink scale-100'
-                  : 'text-neutral-400 hover:text-white hover:bg-white/10'
-              }`}
-            >
-              <Package className="w-4 h-4" />
-              <span>Materials Rent</span>
-              {cartItemCount > 0 && (
-                <span className="px-2 py-0.5 rounded-full bg-ink text-amber text-xs font-mono font-bold">
-                  {cartItemCount}
-                </span>
-              )}
-            </button>
-          </div>
-        </div>
+        <nav
+          className="mt-10 flex items-center gap-8 overflow-x-auto border-b border-white/[0.12] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          aria-label="Catalog"
+        >
+          <button
+            id="tab-btn-packages"
+            onClick={() => {
+              setActiveTab('packages');
+              router.replace('/packages', { scroll: false });
+            }}
+            className={`tab ${activeTab === 'packages' ? 'is-active' : ''}`}
+            aria-current={activeTab === 'packages' ? 'page' : undefined}
+          >
+            Full stage packages
+          </button>
+          <button
+            id="tab-btn-materials"
+            onClick={() => {
+              setActiveTab('materials');
+              router.replace('/packages?tab=materials', { scroll: false });
+            }}
+            className={`tab ${activeTab === 'materials' ? 'is-active' : ''}`}
+            aria-current={activeTab === 'materials' ? 'page' : undefined}
+          >
+            Materials rent
+            {cartItemCount > 0 && (
+              <span className="ml-2 text-amber">({cartItemCount})</span>
+            )}
+          </button>
+        </nav>
       </div>
 
       {/* ─── TAB: FULL PACKAGES ─── */}
       {activeTab === 'packages' && (
-        <>
-          {/* Quick Switch Callout Banner */}
-          <div className="mb-8 p-4 sm:p-5 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-amber text-ink flex items-center justify-center font-bold shrink-0">
-                <Package className="w-5 h-5" />
-              </div>
-              <div className="space-y-0.5 text-left">
-                <h4 className="font-heading text-sm font-bold text-white">
-                  Looking to rent individual sound, light, or stage gear?
-                </h4>
-                <p className="text-xs text-neutral-300">
-                  Select line arrays, subwoofers, moving heads, trussing, silent generators, and fog units a-la-carte.
-                </p>
-              </div>
+        <div className="container-page pt-14 pb-10">
+          {/* Quick switch — open text block, no banner box */}
+          <div className="hairline py-6 flex flex-col sm:flex-row sm:items-center justify-between gap-5">
+            <div className="max-w-2xl">
+              <p className="text-body text-fg-soft">
+                Renting single items instead? Pick line arrays, subs, moving heads,
+                trussing, silent generators and fog units a la carte.
+              </p>
             </div>
             <button
               onClick={() => {
                 setActiveTab('materials');
                 router.replace('/packages?tab=materials', { scroll: false });
               }}
-              className="px-5 py-2.5 rounded-full bg-amber text-ink font-bold text-xs uppercase tracking-wider shrink-0 hover:brightness-110 "
+              className="link-arrow shrink-0"
             >
-              Browse Materials Rent Catalog →
+              <span>Browse the materials catalog</span>
+              <ArrowRight className="w-3.5 h-3.5" aria-hidden />
             </button>
           </div>
 
-          {/* Category Filter Links */}
-          <div className="flex flex-wrap items-center justify-center gap-3 mb-16">
-            {packageCategories.map((c) => {
-              const isActive = activeCategory === c.id;
-              return (
-                <button
-                  key={c.id}
-                  onClick={() => {
-                    if (c.id === 'materials-rent') {
-                      setActiveTab('materials');
-                      router.replace('/packages?tab=materials', { scroll: false });
-                    } else {
-                      setActiveCategory(c.id);
-                    }
-                  }}
-                  className={`px-5 py-2 rounded-full text-xs font-mono uppercase tracking-wider transition-all duration-200 ${
-                    c.id === 'materials-rent'
-                      ? 'bg-amber/20 text-amber hover:bg-amber hover:text-ink font-bold border border-amber/40 shadow-sm'
-                      : isActive
-                      ? 'bg-amber text-ink font-bold '
-                      : 'text-neutral-400 hover:text-white hover:bg-white/5 border border-transparent'
-                  }`}
-                >
-                  {c.label}
-                </button>
-              );
-            })}
+          {/* Category filter — text tabs with amber underline */}
+          <div className="mt-8 border-b border-white/[0.12] overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <div className="flex items-start min-w-max">
+              {PACKAGE_CATEGORIES.map((c) => {
+                const isActive = activeCategory === c.id;
+                return (
+                  <button
+                    key={c.id}
+                    onClick={() => {
+                      if (c.id === 'materials-rent') {
+                        setActiveTab('materials');
+                        router.replace('/packages?tab=materials', { scroll: false });
+                      } else {
+                        setActiveCategory(c.id);
+                      }
+                    }}
+                    className={`tab ${isActive ? 'is-active' : ''}`}
+                  >
+                    {c.label}
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           {loading ? (
-            <div className="py-24 text-center text-neutral-400 font-mono text-xs">
-              Loading production packages catalog...
-            </div>
+            <div className="py-24 text-center label">Loading production packages…</div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 mb-28">
+            <div className="mt-4">
               {filteredPackages.map((pkg) => {
                 const isCustom = pkg.slug === 'custom-rig';
-
-                if (isCustom) {
-                  return (
-                    <div
-                      key={pkg.id}
-                      className="border-t-2 border-haze/60 hover:border-haze pt-6 flex flex-col justify-between transition-colors duration-300 relative"
-                    >
-                      <div className="absolute -top-3 right-0">
-                        <span className="text-[10px] font-mono uppercase px-2.5 py-1 rounded-full bg-haze/20 border border-haze/40 text-haze font-bold">
-                          Build Your Own
-                        </span>
-                      </div>
-
-                      <div>
-                        <div className="flex items-center justify-between mb-3">
-                          <span className="text-[11px] font-mono text-haze uppercase tracking-wider font-semibold">
-                            custom • pick any gear
-                          </span>
-                        </div>
-
-                        <h2 className="font-heading text-2xl font-bold text-white mb-2">
-                          {pkg.name}
-                        </h2>
-
-                        <p className="text-xs sm:text-sm text-neutral-400 mb-6 leading-relaxed">
-                          {pkg.description}
-                        </p>
-
-                        <div className="border-t border-white/10 pt-4 mb-6">
-                          <div className="flex items-baseline gap-2">
-                            <span className="font-heading text-2xl sm:text-3xl font-extrabold text-haze">
-                              You Choose
-                            </span>
-                          </div>
-                          <div className="text-xs text-neutral-400 mt-2 font-mono">
-                            Total depends on selected items. 25% advance on confirmed total.
-                          </div>
-                        </div>
-
-                        <div className="space-y-3 mb-8">
-                          <div className="text-[11px] font-mono uppercase tracking-wider text-haze font-semibold">
-                            How It Works:
-                          </div>
-                          {pkg.features.map((f: string, fi: number) => (
-                            <div key={fi} className="flex items-start gap-2.5 text-xs text-neutral-300">
-                              <CheckCircle2 className="w-4 h-4 text-haze shrink-0 mt-0.5" />
-                              <span>{f}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div className="pt-4 border-t border-white/10 space-y-2">
-                        <Link
-                          href="/book?package=custom-rig"
-                          className="w-full py-3.5 rounded-full text-xs font-bold uppercase tracking-widest text-center flex items-center justify-center gap-2 transition-all bg-haze/10 border border-haze/40 text-haze hover:bg-haze/20 hover:border-haze"
-                        >
-                          <SlidersHorizontal className="w-3.5 h-3.5" />
-                          <span>Build & Book Custom Rig</span>
-                          <ArrowRight className="w-3.5 h-3.5" />
-                        </Link>
-                        <button
-                          onClick={() => setActiveTab('materials')}
-                          className="w-full py-2.5 rounded-full text-xs font-mono text-neutral-400 hover:text-white text-center transition-colors"
-                        >
-                          Browse materials catalog first →
-                        </button>
-                      </div>
-                    </div>
-                  );
-                }
+                const featured = pkg.isPopular && !isCustom;
 
                 return (
-                  <div
+                  <article
                     key={pkg.id}
-                    className="border-t-2 border-white/20 hover:border-amber pt-6 flex flex-col justify-between transition-colors duration-300"
+                    className="hairline py-9 lg:py-11 grid grid-cols-1 lg:grid-cols-12 gap-x-10 gap-y-6"
                   >
-                    <div>
-                      <div className="flex items-center justify-between mb-3">
-                        <span className="text-[11px] font-mono text-amber uppercase tracking-wider font-semibold">
-                          {pkg.category} • In-House Gear
-                        </span>
-                        {pkg.isPopular && (
-                          <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-amber text-ink font-bold">
-                            Most Requested
-                          </span>
-                        )}
+                    <div className="lg:col-span-7">
+                      <div className="flex items-baseline flex-wrap gap-x-5 gap-y-1">
+                        <span className="label">{pkg.category}</span>
+                        {featured && <span className="label label-amber">Most booked</span>}
+                        {isCustom && <span className="label label-amber">Build your own</span>}
                       </div>
 
-                      <h2 className="font-heading text-2xl font-bold text-white mb-2">
+                      <h2
+                        className={`font-heading text-white mt-3 ${
+                          featured ? 'text-h2' : 'text-h3'
+                        }`}
+                      >
                         {pkg.name}
                       </h2>
 
-                      <p className="text-xs sm:text-sm text-neutral-400 mb-6 leading-relaxed">
+                      <p className="mt-3 text-small text-fg-muted leading-relaxed max-w-measure">
                         {pkg.description}
                       </p>
 
-                      <div className="border-t border-white/10 pt-4 mb-6">
-                        <div className="flex items-baseline gap-2">
-                          <span className="font-heading text-3xl sm:text-4xl font-extrabold text-amber">
-                            {formatINR(pkg.price)}
-                          </span>
-                          <span className="text-xs text-neutral-400 font-mono">/ event day</span>
-                        </div>
-                        <div className="text-xs text-neutral-300 mt-2 flex items-center justify-between font-mono">
-                          <span>Deposit to lock date (25%):</span>
-                          <span className="text-white font-bold">
-                            {formatINR(pkg.price * 0.25)}
-                          </span>
-                        </div>
-                        <div className="text-[11px] text-neutral-400 mt-1 flex items-center justify-between font-mono">
-                          <span>Balance on-site (75%):</span>
+                      <div className="mt-7">
+                        <span className="label block mb-3">
+                          {isCustom ? 'How it works' : 'Included'}
+                        </span>
+                        <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-10 gap-y-2.5">
+                          {pkg.features.map((f: string, fi: number) => (
+                            <li key={fi} className="marker-dot text-small text-fg-soft">
+                              {f}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+
+                    <div className="lg:col-span-5 lg:border-l lg:border-white/10 lg:pl-10 flex flex-col gap-6">
+                      <div>
+                        {isCustom ? (
+                          <>
+                            <div className="font-heading text-3xl sm:text-4xl font-black text-amber">
+                              You choose
+                            </div>
+                            <div className="mt-2 label">Priced from the items you pick</div>
+                          </>
+                        ) : (
+                          <>
+                            <div className="font-heading text-4xl sm:text-5xl font-black text-amber tabular-nums">
+                              {formatINR(pkg.price)}
+                            </div>
+                            <div className="mt-2 label">Per event day</div>
+                            <div className="mt-6 space-y-1.5 font-mono text-spec text-fg-muted">
+                              <div className="flex justify-between gap-4">
+                                <span>25% advance</span>
+                                <span className="text-fg-soft">
+                                  {formatINR(pkg.price * 0.25)}
+                                </span>
+                              </div>
+                              <div className="flex justify-between gap-4">
+                                <span>Balance on site</span>
+                                <span className="text-fg-soft">
+                                  {formatINR(pkg.price * 0.75)}
+                                </span>
+                              </div>
+                            </div>
+                          </>
+                        )}
+                      </div>
+
+                      <div className="mt-auto flex flex-col items-start gap-4">
+                        <Link href={`/book?package=${pkg.slug}`} className="link-arrow">
                           <span>
-                            {formatINR(pkg.price * 0.75)}
+                            {isCustom ? 'Build & book custom rig' : 'Book stage rig'}
                           </span>
-                        </div>
-                      </div>
-
-                      <div className="space-y-3 mb-8">
-                        <div className="text-[11px] font-mono uppercase tracking-wider text-amber font-semibold">
-                          Package Inclusions:
-                        </div>
-                        {pkg.features.map((f: string, fi: number) => (
-                          <div key={fi} className="flex items-start gap-2.5 text-xs text-neutral-300">
-                            <CheckCircle2 className="w-4 h-4 text-amber shrink-0 mt-0.5" />
-                            <span>{f}</span>
-                          </div>
-                        ))}
+                          <ArrowRight className="w-3.5 h-3.5" aria-hidden />
+                        </Link>
+                        {isCustom && (
+                          <button
+                            onClick={() => {
+                              setActiveTab('materials');
+                              router.replace('/packages?tab=materials', { scroll: false });
+                            }}
+                            className="link-arrow !text-[10px] !text-fg-muted"
+                          >
+                            <span>Browse materials first</span>
+                          </button>
+                        )}
                       </div>
                     </div>
-
-                    <div className="pt-4 border-t border-white/10">
-                      <Link
-                        href={`/book?package=${pkg.slug}`}
-                        className={`w-full py-3.5 rounded-full text-xs font-bold uppercase tracking-widest text-center flex items-center justify-center gap-2 transition-all ${
-                          pkg.isPopular
-                            ? 'bg-amber text-ink hover:brightness-110 '
-                            : 'border border-white/20 text-white hover:border-amber hover:text-amber'
-                        }`}
-                      >
-                        <Calendar className="w-3.5 h-3.5" />
-                        <span>Reserve Rig (25% Advance)</span>
-                        <ArrowRight className="w-3.5 h-3.5" />
-                      </Link>
-                    </div>
-                  </div>
+                  </article>
                 );
               })}
             </div>
           )}
-        </>
+        </div>
       )}
 
       {/* ─── TAB: MATERIALS RENT ─── */}
       {activeTab === 'materials' && (
-        <div className="space-y-8 mb-20">
-          <div className="text-center max-w-2xl mx-auto space-y-2">
-            <div className="text-xs font-mono text-amber uppercase tracking-[0.2em] flex items-center justify-center gap-2">
-              <Wrench className="w-3.5 h-3.5" />
-              <span>BUILD YOUR OWN RIG • DAILY RENTAL RATES</span>
-            </div>
-            <p className="text-sm text-neutral-300 leading-relaxed">
-              Select individual materials to rent for your event. Mix and match speakers, lights, effects, and power units. Our team delivers, rigs, and retrieves everything.
+        <div className="container-page pt-14 pb-24">
+          <div className="max-w-3xl">
+            <span className="label label-amber">Build your own rig · daily rates</span>
+            <p className="mt-4 text-body text-fg-muted leading-relaxed max-w-measure">
+              Pick the individual items you need. We deliver, rig and retrieve
+              everything — the total below is per rental day, before delivery zone.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Materials Catalog */}
-            <div className="lg:col-span-2 space-y-6">
-              {/* Material Category Filter Pills */}
-              <div className="flex flex-wrap items-center gap-2 pb-3 border-b border-white/10">
-                <button
-                  onClick={() => setMaterialsCategoryFilter('all')}
-                  className={`px-4 py-1.5 rounded-full text-xs font-mono uppercase tracking-wider transition-all ${
-                    materialsCategoryFilter === 'all'
-                      ? 'bg-amber text-ink font-bold '
-                      : 'text-neutral-400 hover:text-white bg-white/5 border border-white/10 hover:bg-white/10'
-                  }`}
-                >
-                  All Items ({materials.length})
-                </button>
-                {materialCategories.map((cat) => {
-                  const icon = CATEGORY_ICONS[cat] || <Package className="w-3.5 h-3.5" />;
-                  const count = materials.filter((m) => m.category === cat).length;
-                  return (
+          <div className="mt-10 grid grid-cols-1 lg:grid-cols-12 gap-x-12">
+            {/* Materials catalog */}
+            <div className="lg:col-span-8">
+              {/* Category tabs + admin add row */}
+              <div className="border-b border-white/[0.12] overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                <div className="flex items-end justify-between gap-6 min-w-max">
+                  <div className="flex items-start">
                     <button
-                      key={cat}
-                      onClick={() => setMaterialsCategoryFilter(cat)}
-                      className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-mono uppercase tracking-wider transition-all ${
-                        materialsCategoryFilter === cat
-                          ? 'bg-amber text-ink font-bold '
-                          : 'text-neutral-400 hover:text-white bg-white/5 border border-white/10 hover:bg-white/10'
-                      }`}
+                      onClick={() => setMaterialsCategoryFilter('all')}
+                      className={`tab ${materialsCategoryFilter === 'all' ? 'is-active' : ''}`}
                     >
-                      {icon}
-                      <span className="capitalize">{cat}</span>
-                      <span className="opacity-70 text-[10px]">({count})</span>
+                      All items ({materials.length})
                     </button>
-                  );
-                })}
+                    {materialCategories.map((cat) => {
+                      const count = materials.filter((m) => m.category === cat).length;
+                      return (
+                        <button
+                          key={cat}
+                          onClick={() => setMaterialsCategoryFilter(cat)}
+                          className={`tab capitalize ${
+                            materialsCategoryFilter === cat ? 'is-active' : ''
+                          }`}
+                        >
+                          {cat} ({count})
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {isAdmin && (
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setEditor({
+                          mode: 'new',
+                          initialCategory:
+                           materialsCategoryFilter !== 'all'
+                             ? materialsCategoryFilter
+                              : undefined,
+                        })
+                      }
+                      className="link-arrow label-amber shrink-0 pb-3.5"
+                    >
+                      <span>+ Add new equipment</span>
+                    </button>
+                  )}
+                </div>
               </div>
 
               {materialsLoading ? (
-                <div className="py-16 text-center text-neutral-400 font-mono text-xs">
-                  Loading materials catalog...
+                <div className="py-16 flex items-center gap-3 label">
+                  <Loader2 className="w-4 h-4 animate-spin text-amber" aria-hidden />
+                  <span>Loading materials catalog…</span>
                 </div>
               ) : materials.length === 0 ? (
-                <div className="py-16 text-center text-neutral-400 font-mono text-xs">
-                  No materials available yet. Check back soon or contact us for custom quotes.
+                <div className="py-16 space-y-5">
+                  <p className="text-small text-fg-muted">
+                    No materials listed yet. Call the depot for a custom quote.
+                  </p>
+                  {isAdmin && (
+                    <button
+                      type="button"
+                      onClick={() => setEditor({ mode: 'new' })}
+                      className="link-arrow label-amber"
+                    >
+                      <span>+ Add the first equipment</span>
+                    </button>
+                  )}
                 </div>
               ) : (
                 materialCategories
-                  .filter((cat) => materialsCategoryFilter === 'all' || cat === materialsCategoryFilter)
+                  .filter(
+                    (cat) =>
+                      materialsCategoryFilter === 'all' || cat === materialsCategoryFilter
+                  )
                   .map((cat) => {
-                  const catMaterials = materials.filter((m) => m.category === cat);
-                  const icon = CATEGORY_ICONS[cat] || <Package className="w-3.5 h-3.5" />;
-                  const colorClass = CATEGORY_COLORS[cat] || 'text-neutral-300';
-                  return (
-                    <div key={cat}>
-                      {/* Category Header */}
-                      <div className={`flex items-center gap-2 mb-4 ${colorClass}`}>
-                        {icon}
-                        <span className="text-[11px] font-mono uppercase tracking-[0.2em] font-bold">
-                          {cat.charAt(0).toUpperCase() + cat.slice(1)} Equipment
-                        </span>
-                        <div className="flex-1 border-t border-white/10" />
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        {catMaterials.map((m) => {
-                          const qty = cart[m.id] || 0;
-                          return (
-                            <div
-                              key={m.id}
-                              className={`p-5 rounded-2xl border transition-all ${
-                                qty > 0
-                                  ? 'border-amber/60 bg-amber/5 '
-                                  : 'border-white/10 bg-white/[0.03] hover:border-white/20'
-                              }`}
+                    const catMaterials = materials.filter((m) => m.category === cat);
+                    return (
+                      <section key={cat} className="mt-12 first:mt-8">
+                        <div className="flex items-baseline justify-between gap-4 pb-3 border-b border-white/[0.12]">
+                          <h3 className="label text-fg capitalize">
+                            {cat} equipment
+                            <span className="ml-3 text-fg-muted normal-case tracking-normal">
+                              {catMaterials.length} items
+                            </span>
+                          </h3>
+                          {isAdmin && (
+                            <button
+                              type="button"
+                              onClick={() => setEditor({ mode: 'new', initialCategory: cat })}
+                              className="link-arrow !text-[10px] label-amber"
                             >
-                              <div className="flex items-start justify-between gap-3 mb-2">
-                                <div className="flex-1 min-w-0">
-                                  <h3 className="font-heading text-sm font-bold text-white truncate">
-                                    {m.name}
-                                  </h3>
-                                  <p className="text-[11px] text-neutral-400 mt-0.5 leading-relaxed line-clamp-2">
-                                    {m.description}
-                                  </p>
-                                </div>
-                              </div>
+                              <span>Add to {cat}</span>
+                            </button>
+                          )}
+                        </div>
 
-                              <div className="flex items-center justify-between mt-3">
-                                <div>
-                                  <span className="font-heading text-base font-bold text-amber">
-                                    {formatINR(m.pricePerDay)}
-                                  </span>
-                                  <span className="text-[10px] text-neutral-400 font-mono ml-1">
-                                    / {m.unit} / day
-                                  </span>
-                                </div>
+                        <div>
+                          {catMaterials.map((m) => (
+                            <MaterialCard
+                              key={m.id}
+                              material={m}
+                              quantity={cart[m.id] || 0}
+                              onQuantityChange={(q) => {
+                                setCart((prev) => {
+                                  if (q === 0) {
+                                    const { [m.id]: _, ...rest } = prev;
+                                    return rest;
+                                  }
+                                  return { ...prev, [m.id]: q };
+                                });
+                              }}
+                              onOpenLightbox={() => setLightbox({ material: m, index: 0 })}
+                              isAdmin={isAdmin}
+                              uploading={uploadingFor === m.id}
+                              onUploadFiles={(files) => uploadImagesToMaterial(m.id, files)}
+                              onManage={() => setManaging(m)}
+                              onEdit={() => setEditor({ mode: 'edit', material: m })}
+                              onDelete={() => deleteMaterial(m)}
+                            />
+                          ))}
 
-                                {/* Quantity Control */}
-                                <div className="flex items-center gap-2">
-                                  {qty > 0 ? (
-                                    <>
-                                      <button
-                                        onClick={() => setQty(m.id, -1)}
-                                        className="w-7 h-7 rounded-full border border-white/20 flex items-center justify-center text-neutral-300 hover:border-red-400/50 hover:text-red-400 transition-colors"
-                                      >
-                                        <Minus className="w-3 h-3" />
-                                      </button>
-                                      <span className="w-7 text-center font-mono text-sm font-bold text-amber">
-                                        {qty}
-                                      </span>
-                                      <button
-                                        onClick={() => setQty(m.id, 1)}
-                                        className="w-7 h-7 rounded-full border border-amber/40 bg-amber/10 flex items-center justify-center text-amber hover:bg-amber/20 transition-colors"
-                                      >
-                                        <Plus className="w-3 h-3" />
-                                      </button>
-                                    </>
-                                  ) : (
-                                    <button
-                                      onClick={() => setQty(m.id, 1)}
-                                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/15 text-[11px] font-mono text-neutral-300 hover:border-amber/50 hover:text-amber hover:bg-amber/5 transition-all"
-                                    >
-                                      <Plus className="w-3 h-3" />
-                                      <span>Add</span>
-                                    </button>
-                                  )}
-                                </div>
-                              </div>
-
-                              {qty > 0 && (
-                                <div className="mt-3 pt-3 border-t border-white/10 flex items-center justify-between text-[11px] font-mono">
-                                  <span className="text-neutral-400">Subtotal ({qty} {m.unit}):</span>
-                                  <span className="text-amber font-bold">{formatINR(m.pricePerDay * qty)}/day</span>
-                                </div>
-                              )}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  );
-                })
+                          {/* Admin-only: plain text add row at the end of the category */}
+                          {isAdmin && (
+                            <button
+                              type="button"
+                              onClick={() => setEditor({ mode: 'new', initialCategory: cat })}
+                              className="hairline w-full py-5 text-left link-arrow label-amber"
+                            >
+                              <span>+ Add new equipment to {cat}</span>
+                            </button>
+                          )}
+                        </div>
+                      </section>
+                    );
+                  })
               )}
             </div>
 
-            {/* Cart / Summary Sidebar */}
-            <div className="space-y-4">
-              <div className="sticky top-24">
-                <div className="glass-card-amber rounded-3xl p-6 border border-amber/30 space-y-5">
-                  <div className="flex items-center justify-between">
-                    <h3 className="font-heading text-base font-bold text-white flex items-center gap-2">
-                      <ShoppingCart className="w-4 h-4 text-amber" />
-                      <span>Rental Summary</span>
-                    </h3>
-                    {cartItemCount > 0 && (
-                      <button
-                        onClick={clearCart}
-                        className="flex items-center gap-1 text-[11px] font-mono text-red-400 hover:text-red-300 transition-colors"
-                      >
-                        <X className="w-3 h-3" />
-                        <span>Clear</span>
-                      </button>
-                    )}
-                  </div>
+            {/* Rental summary — sticky column behind a vertical hairline */}
+            <aside className="lg:col-span-4 mt-14 lg:mt-0 lg:border-l lg:border-white/10 lg:pl-10">
+              <div className="lg:sticky lg:top-28">
+                <div className="hairline flex items-baseline justify-between gap-4 pt-4 pb-5">
+                  <h3 className="font-heading text-h4 text-white">Rental summary</h3>
+                  {cartItemCount > 0 && (
+                    <button
+                      onClick={clearCart}
+                      className="link-arrow !text-[10px] !text-fg-muted hover:!text-red-400"
+                    >
+                      <span>Clear</span>
+                    </button>
+                  )}
+                </div>
 
-                  {cartItemCount === 0 ? (
-                    <div className="py-8 text-center space-y-2">
-                      <Package className="w-10 h-10 text-neutral-600 mx-auto" />
-                      <p className="text-xs text-neutral-500 font-mono">
-                        No items selected yet. Add materials from the catalog.
-                      </p>
-                    </div>
-                  ) : (
-                    <>
-                      <div className="space-y-3 border-y border-white/10 py-4 max-h-64 overflow-y-auto">
-                        {Object.entries(cart)
-                          .filter(([, qty]) => qty > 0)
-                          .map(([id, qty]) => {
-                            const m = materials.find((x) => x.id === id);
-                            if (!m) return null;
-                            return (
-                              <div key={id} className="flex items-start justify-between gap-2 text-xs">
-                                <div className="flex-1 min-w-0">
-                                  <div className="text-neutral-200 font-medium truncate">{m.name}</div>
-                                  <div className="text-neutral-500 font-mono">
-                                    {qty} {m.unit} × {formatINR(m.pricePerDay)}
-                                  </div>
-                                </div>
-                                <div className="text-amber font-mono font-bold shrink-0">
-                                  {formatINR(m.pricePerDay * qty)}
+                {cartItemCount === 0 ? (
+                  <p className="text-small text-fg-muted leading-relaxed max-w-measure">
+                    Nothing selected yet. Add items from the catalog and the daily
+                    total builds up here.
+                  </p>
+                ) : (
+                  <>
+                    <div className="max-h-72 overflow-y-auto">
+                      {Object.entries(cart)
+                        .filter(([, qty]) => qty > 0)
+                        .map(([id, qty]) => {
+                          const m = materials.find((x) => x.id === id);
+                          if (!m) return null;
+                          return (
+                            <div
+                              key={id}
+                              className="hairline py-3 flex items-start justify-between gap-4 text-small"
+                            >
+                              <div className="min-w-0">
+                                <div className="text-fg-soft truncate">{m.name}</div>
+                                <div className="font-mono text-spec text-fg-muted">
+                                  {qty} {m.unit} × {formatINR(m.pricePerDay)}
                                 </div>
                               </div>
-                            );
-                          })}
-                      </div>
-
-                      <div className="space-y-2">
-                        <div className="flex justify-between text-sm">
-                          <span className="font-bold text-amber font-mono">Total / Day:</span>
-                          <span className="font-mono font-extrabold text-amber">{formatINR(cartTotal)}</span>
-                        </div>
-                        <p className="text-[10px] text-neutral-400 font-mono">
-                          Final quote depends on event duration and delivery zone. Contact us to confirm.
-                        </p>
-                      </div>
-                    </>
-                  )}
-
-                  {cartItemCount > 0 && (
-                    <div className="space-y-2.5 pt-2">
-                      <button
-                        onClick={handleBookCustomPackage}
-                        className="w-full py-4 rounded-full bg-amber text-ink font-bold text-xs uppercase tracking-widest text-center flex items-center justify-center gap-2 hover:brightness-110 transition-all cursor-pointer"
-                      >
-                        <Calendar className="w-3.5 h-3.5" />
-                        <span>Book as Custom Rig ({formatINR(cartTotal)}/day)</span>
-                        <ArrowRight className="w-3.5 h-3.5" />
-                      </button>
-
-                      <a
-                        href={`https://wa.me/${process.env.NEXT_PUBLIC_WA_NUMBER || '919876543210'}?text=${buildInquiryMessage()}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="w-full py-3 rounded-full glass-card border border-white/20 text-neutral-200 hover:text-white text-xs font-mono uppercase tracking-wider text-center flex items-center justify-center gap-2 transition-all hover:bg-white/10"
-                      >
-                        <span>Request Rental Quote on WhatsApp</span>
-                        <ArrowRight className="w-3.5 h-3.5" />
-                      </a>
-
-                      <Link
-                        href="/inquiry"
-                        className="w-full py-2.5 rounded-full border border-white/10 text-neutral-400 hover:text-white text-xs font-mono uppercase tracking-wider text-center flex items-center justify-center gap-2 hover:border-white/20 transition-all"
-                      >
-                        <span>Submit Formal Proposal</span>
-                      </Link>
+                              <div className="text-amber font-mono font-bold shrink-0 tabular-nums">
+                                {formatINR(m.pricePerDay * qty)}
+                              </div>
+                            </div>
+                          );
+                        })}
                     </div>
-                  )}
 
-                  <div className="pt-2 border-t border-white/10 space-y-1.5 text-[11px] text-neutral-400 font-mono">
-                    <div className="flex items-center gap-1.5 text-emerald-400">
-                      <ShieldCheck className="w-3.5 h-3.5" />
-                      <span>All gear is 100% in-house</span>
+                    <div className="hairline mt-1 pt-5 flex items-baseline justify-between gap-4">
+                      <span className="label">Total / day</span>
+                      <span className="font-heading text-3xl font-black text-amber tabular-nums">
+                        {formatINR(cartTotal)}
+                      </span>
                     </div>
-                    <div className="flex items-center gap-1.5">
-                      <Wrench className="w-3.5 h-3.5 text-amber" />
-                      <span>Delivery, rigging &amp; retrieval included</span>
-                    </div>
+                    <p className="mt-3 label !tracking-[0.1em] leading-relaxed">
+                      Final quote depends on event duration and delivery zone.
+                    </p>
+                  </>
+                )}
+
+                {cartItemCount > 0 && (
+                  <div className="mt-7 flex flex-col items-start gap-5">
+                    <button onClick={handleBookCustomPackage} className="btn-primary w-full">
+                      Book as custom rig
+                    </button>
+
+                    <a
+                      href={`https://wa.me/${
+                        process.env.NEXT_PUBLIC_WA_NUMBER || '919876543210'
+                      }?text=${buildInquiryMessage()}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="link-arrow"
+                    >
+                      <span>Request rental quote on WhatsApp</span>
+                      <ArrowRight className="w-3.5 h-3.5" aria-hidden />
+                    </a>
+
+                    <Link href="/inquiry" className="link-arrow !text-fg-muted">
+                      <span>Submit a formal proposal</span>
+                    </Link>
                   </div>
+                )}
+
+                <div className="hairline mt-8 pt-5 space-y-2 label !tracking-[0.1em]">
+                  <p>Every item is owned by this depot</p>
+                  <p>Delivery, rigging &amp; retrieval included</p>
                 </div>
               </div>
-            </div>
+            </aside>
           </div>
+
+          {lightbox && (
+            <MaterialLightbox
+              material={lightbox.material}
+              index={lightbox.index}
+              onClose={() => setLightbox(null)}
+              onNavigate={(index) => setLightbox((prev) => (prev ? { ...prev, index } : prev))}
+            />
+          )}
+
+          {isAdmin && managing && (
+            <ManagePhotosModal
+              material={managing}
+              onClose={() => setManaging(null)}
+              onSaving={saveMaterialImages}
+              onChanged={async () => {
+                await refreshMaterials();
+                const freshRes = await fetch('/api/materials');
+                const freshData = await freshRes.json();
+                const fresh = freshData.materials?.find(
+                  (m: Material) => m.id === managing.id
+                );
+                if (fresh) setManaging(fresh);
+              }}
+              showToast={showToast}
+            />
+          )}
+
+          {isAdmin && editor && (
+            <AddEditEquipmentModal
+              mode={editor.mode}
+              material={editor.material}
+              initialCategory={editor.initialCategory}
+              existingCategories={materialCategories}
+              onSave={async (payload) => {
+                const isEdit = editor.mode === 'edit';
+                const url = '/api/admin/materials';
+                const method = isEdit ? 'PATCH' : 'POST';
+                const body = isEdit ? { id: editor.material!.id, ...payload } : payload;
+                const res = await fetch(url, {
+                  method,
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify(body),
+                });
+                if (res.status === 401) {
+                  showToast('error', 'Unauthorized. Admin session required.');
+                  return false;
+                }
+                const data = await res.json().catch(() => ({}));
+                if (!data.success) {
+                  showToast('error', data.error || 'Failed to save equipment.');
+                  return false;
+                }
+                showToast(
+                  'success',
+                  isEdit ? 'Equipment updated.' : 'New equipment added to the catalog.'
+                );
+                await refreshMaterials();
+                return true;
+              }}
+              onClose={() => setEditor(null)}
+              showToast={showToast}
+            />
+          )}
         </div>
       )}
 
-      {/* Custom Concert Inquiry Banner */}
-      <div className="border-t border-white/10 pt-16 flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
-        <div className="space-y-3 max-w-2xl">
-          <div className="flex items-center gap-2 text-amber text-xs font-mono uppercase tracking-[0.2em]">
-            <Sparkles className="w-4 h-4 text-amber" />
-            <span>CUSTOM ACOUSTIC MODELING &amp; MULTI-DAY FESTIVALS</span>
+      {/* Custom build CTA */}
+      <div className="border-t border-white/[0.12]">
+        <div className="container-page section-tight flex flex-col md:flex-row md:items-end justify-between gap-8">
+          <div className="max-w-2xl">
+            <span className="label label-amber">
+              Multi-day festivals · college fests · temple celebrations
+            </span>
+            <h2 className="font-heading text-h2 text-white mt-3">
+              Need a 16-box line array or custom truss geometry?
+            </h2>
+            <p className="mt-4 text-small text-fg-muted leading-relaxed max-w-measure">
+              We model the coverage for the actual field, bring dual power backup
+              and put a dedicated FOH and monitor team on the job sheet.
+            </p>
           </div>
-          <h3 className="font-heading text-2xl sm:text-4xl font-extrabold text-white">
-            Need A 16-Box Line Array Or Custom Truss Architecture?
-          </h3>
-          <p className="text-xs sm:text-sm text-neutral-300 leading-relaxed">
-            For college cultural festivals, arena tour stops, or multi-day temple celebrations, we provide customized sound modeling, dual power backup systems, and dedicated FOH/monitor audio teams.
-          </p>
-        </div>
 
-        <Link
-          href="/inquiry"
-          className="shrink-0 px-9 py-4 rounded-full bg-amber text-ink font-bold text-xs uppercase tracking-widest hover:brightness-110 transition-all "
-        >
-          Request Custom Proposal
-        </Link>
+          <Link href="/inquiry" className="btn-primary shrink-0">
+            Request a custom proposal
+          </Link>
+        </div>
       </div>
+
+      {toast && (
+        <div className="toast fixed bottom-5 left-1/2 -translate-x-1/2 z-[90]" role="status">
+          {toast.type === 'success' ? (
+            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" aria-hidden />
+          ) : (
+            <X className="w-4 h-4 text-red-400 shrink-0" aria-hidden />
+          )}
+          <span className={toast.type === 'success' ? 'text-emerald-300' : 'text-red-300'}>
+            {toast.text}
+          </span>
+        </div>
+      )}
     </div>
   );
 }
@@ -736,9 +838,9 @@ export default function PackagesPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen flex items-center justify-center text-amber font-mono text-xs gap-2">
-          <Loader2 className="w-5 h-5 animate-spin" />
-          <span>Loading Production Catalog...</span>
+        <div className="min-h-screen flex items-center justify-center label gap-2">
+          <Loader2 className="w-5 h-5 animate-spin text-amber" aria-hidden />
+          <span>Loading production catalog…</span>
         </div>
       }
     >

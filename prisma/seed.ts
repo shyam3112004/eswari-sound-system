@@ -1,4 +1,5 @@
 import { PrismaClient } from '@prisma/client';
+import { DEFAULT_PORTFOLIO } from '../lib/defaultPortfolio';
 
 const prisma = new PrismaClient();
 
@@ -287,6 +288,14 @@ async function main() {
       await prisma.availability.create({ data: h });
     }
     console.log('Availability seeded.');
+  }
+
+  const portfolioCount = await prisma.portfolioItem.count();
+  if (portfolioCount === 0) {
+    for (const item of DEFAULT_PORTFOLIO) {
+      await prisma.portfolioItem.create({ data: item });
+    }
+    console.log('Portfolio seeded.');
   }
 
   console.log('Done!');

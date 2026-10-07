@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { Calendar, ArrowRight, Phone, Clock } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { formatINR } from '@/lib/utils';
 
 /**
@@ -14,18 +14,18 @@ const SHADOW = 'drop-shadow-[0_2px_16px_rgba(0,0,0,0.9)]';
 const OVERLAY_PACKAGES = [
   {
     name: 'Basic Sound',
-    spec: '2 x 500W speakers, wireless mic, 4-channel mixer',
+    spec: '2 × 500W tops, wireless mic, 4-channel mixer',
     price: 800000,
   },
   {
     name: 'Premium DJ & Stage',
-    spec: '4 x 1000W line arrays, LED pars, fog, sound engineer',
+    spec: '4 × 1000W line arrays, LED pars, fog, FOH engineer',
     price: 2500000,
     popular: true,
   },
   {
     name: 'Mega Event Concert',
-    spec: '8 x flown line arrays, sub array, 12 moving heads, truss',
+    spec: '8 flown boxes, sub array, 12 moving heads, truss',
     price: 5500000,
   },
 ];
@@ -33,23 +33,23 @@ const OVERLAY_PACKAGES = [
 const SERVICE_ITEMS = [
   {
     num: '01',
-    title: 'Flown Line Arrays',
-    desc: 'DSP-tuned stacks delivering even response across 10,000+ attendees.',
+    title: 'Flown line arrays',
+    desc: 'DSP-tuned stacks holding even pressure from the front row to the back fence.',
   },
   {
     num: '02',
-    title: 'Concert Lighting',
-    desc: 'Moving heads, 3200K tungsten wash and synchronized haze.',
+    title: 'Concert lighting',
+    desc: 'Moving heads, 3200K tungsten wash and haze, run over DMX by our operator.',
   },
   {
     num: '03',
-    title: 'Stage Architecture',
-    desc: 'Walnut modular decks up to 60ft with certified safety rails.',
+    title: 'Stage architecture',
+    desc: 'Modular walnut decks to 60ft on steel legs with certified safety rails.',
   },
   {
     num: '04',
-    title: 'Lead FOH Engineers',
-    desc: 'Senior operators on digital consoles and wireless frequency scans.',
+    title: 'Lead FOH engineers',
+    desc: 'Senior operators on digital consoles, doing the wireless scan before doors.',
   },
 ];
 
@@ -64,35 +64,28 @@ export function SafeZoneOverlays() {
         aria-label="Introduction"
       >
         <div className={`w-full max-w-4xl mx-auto text-center space-y-7 ${SHADOW}`}>
-          <p className="text-amber text-xs sm:text-sm font-mono uppercase tracking-[0.3em]">
-            Direct provider, South India concert rigging
+          <p className="label label-amber !tracking-[0.3em]">
+            Madurai &amp; Chennai · owned rigs, own crew, since 1998
           </p>
 
-          <h1 className="font-heading text-4xl sm:text-6xl lg:text-7xl font-black text-white tracking-tight leading-[1.05]">
-            Pure Acoustic Power{' '}
-            <span className="text-amber">&amp; Concert Illumination</span>
+          <h1 className="font-heading text-display text-white">
+            Line arrays, stage truss and lights —{' '}
+            <span className="text-amber">run by the people who own them.</span>
           </h1>
 
-          <p className="max-w-2xl mx-auto text-base sm:text-lg text-neutral-200 leading-relaxed">
-            Tour-grade flown line arrays, concert DMX moving heads, and 25 years
-            of single-source acoustic mastery. Zero middlemen.
+          <p className="max-w-measure mx-auto text-body-lg text-fg-soft leading-relaxed">
+            Twenty-five years of concert and wedding production across Tamil Nadu.
+            One company answers for the audio, the stage and the lighting.
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
-            <Link
-              href="/book"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-9 py-4 rounded-full bg-amber text-ink font-bold text-xs uppercase tracking-widest hover:brightness-110 active:scale-[0.98] transition-all"
-            >
-              <Calendar className="w-4 h-4" aria-hidden />
-              <span>Book Stage Rig</span>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-5 pt-2">
+            <Link href="/book" className="btn-primary w-full sm:w-auto">
+              Book stage rig
             </Link>
 
-            <Link
-              href="/packages"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 text-neutral-200 hover:text-white font-medium text-xs uppercase tracking-widest transition-colors"
-            >
-              <span>View Packages</span>
-              <ArrowRight className="w-3.5 h-3.5 text-amber" aria-hidden />
+            <Link href="/packages" className="link-arrow !text-[11px]">
+              <span>See day rates</span>
+              <ArrowRight className="w-3.5 h-3.5" aria-hidden />
             </Link>
           </div>
         </div>
@@ -102,36 +95,32 @@ export function SafeZoneOverlays() {
       <section
         data-stage-overlay
         data-edge="hidden"
-        className="stage-overlay absolute inset-y-0 left-0 w-full md:w-[52%] flex items-center p-6 sm:p-12 lg:p-16"
+        className="stage-overlay absolute inset-y-0 left-0 w-full md:w-[54%] flex items-center p-6 sm:p-12 lg:p-16"
         aria-label="Engineering heritage"
       >
         <div className={`space-y-6 max-w-xl ${SHADOW}`}>
           <span className="w-10 h-px bg-amber block" aria-hidden />
 
-          <h2 className="font-heading text-3xl sm:text-5xl lg:text-6xl font-black text-white leading-[1.08] tracking-tight">
-            Built by sound engineers,{' '}
-            <span className="text-amber">never by event brokers.</span>
+          <h2 className="font-heading text-h2 text-white">
+            The rig you are quoted is the rig that shows up.
           </h2>
 
-          <p className="text-sm sm:text-base text-neutral-200 leading-relaxed">
-            Middlemen rent whatever a low-bid vendor has spare: blown drivers and
-            feedback screech at your biggest moment. Every cabinet, moving head
-            and walnut deck we deploy is owned, calibrated and operated by our
-            permanent crew.
+          <p className="text-body text-fg-soft leading-relaxed max-w-measure">
+            Brokers sub-let whatever is free that week — blown drivers and feedback
+            right at your loudest moment. Every cabinet, moving head and deck we
+            deploy is owned, calibrated and operated by our own crew.
           </p>
 
-          <ul className="pt-1 space-y-4 border-l-2 border-amber pl-5">
+          <ul className="pt-1">
             {[
-              ['Line Array Acoustics', 'Flown arrays tuned for even pressure across thousands of attendees.'],
-              ['Concert Illumination', 'Truss loaded with 3200K tungsten wash, moving beams and hazers.'],
-              ['Heavy-Duty Staging', 'Dark walnut non-slip decks with certified rails and skirting.'],
-              ['Certified Reliability', 'Direct engineer dispatch, zero brokerage, zero sub-leasing.'],
+              ['Line array acoustics', 'Flown arrays tuned for even pressure across a full field.'],
+              ['Concert illumination', 'Truss loaded with 3200K wash, moving beams and hazers.'],
+              ['Heavy-duty staging', 'Non-slip decks with certified rails and flame-retardant skirting.'],
+              ['Direct dispatch', 'The engineer who quotes the show runs the show.'],
             ].map(([label, desc]) => (
-              <li key={label}>
-                <span className="text-amber font-mono font-bold text-xs uppercase tracking-wider block">
-                  {label}
-                </span>
-                <p className="text-xs sm:text-sm text-neutral-300 mt-0.5">{desc}</p>
+              <li key={label} className="hairline py-3.5 first:border-t-0 first:pt-0">
+                <span className="label label-amber">{label}</span>
+                <p className="text-small text-fg-muted mt-1">{desc}</p>
               </li>
             ))}
           </ul>
@@ -146,21 +135,20 @@ export function SafeZoneOverlays() {
         aria-label="Services"
       >
         <div className={`w-full max-w-6xl pb-2 ${SHADOW}`}>
-          <div className="text-center mb-6">
-            <h3 className="font-heading text-2xl sm:text-4xl font-extrabold text-white">
-              Tour-Grade Stage Reinforcement
+          <div className="mb-6">
+            <span className="label label-amber">What we put on your stage</span>
+            <h3 className="font-heading text-h3 text-white mt-2">
+              Tour-grade reinforcement, four disciplines
             </h3>
           </div>
 
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 text-left">
             {SERVICE_ITEMS.map((item) => (
-              <div key={item.num} className="border-t border-amber/50 pt-3">
-                <span className="text-amber font-mono text-xs font-bold uppercase tracking-wider block mb-1">
+              <div key={item.num} className="border-t border-white/25 pt-3">
+                <span className="label label-amber block mb-1.5">
                   {item.num} / {item.title}
                 </span>
-                <p className="text-xs text-neutral-300 leading-relaxed">
-                  {item.desc}
-                </p>
+                <p className="text-small text-fg-soft leading-relaxed">{item.desc}</p>
               </div>
             ))}
           </div>
@@ -176,47 +164,42 @@ export function SafeZoneOverlays() {
       >
         <div className={`space-y-6 w-full max-w-lg ${SHADOW}`}>
           <div>
-            <h2 className="font-heading text-3xl sm:text-5xl font-extrabold text-white">
-              Standard Stage Rigs
-            </h2>
-            <p className="text-xs sm:text-sm text-neutral-300 mt-2">
-              A 25% advance locks the date. No hidden transport charges inside
-              major hubs.
+            <span className="label label-amber">Day rates</span>
+            <h2 className="font-heading text-h2 text-white mt-2">Stage rigs</h2>
+            <p className="text-small text-fg-soft mt-2 max-w-measure">
+              A 25% advance holds the date. Transport inside Madurai and Chennai
+              city limits is already in the price.
             </p>
           </div>
 
           <ul className="divide-y divide-white/15">
             {OVERLAY_PACKAGES.map((pkg) => (
-              <li key={pkg.name} className="py-3 flex items-baseline justify-between gap-4">
-                <div>
+              <li key={pkg.name} className="py-3.5 flex items-baseline justify-between gap-4">
+                <div className="min-w-0">
                   <span className="font-heading text-base font-bold text-white block">
                     {pkg.name}
                     {pkg.popular && (
-                      <span className="ml-2 align-middle text-[9px] font-mono uppercase px-1.5 py-0.5 rounded bg-amber text-ink font-bold">
-                        Popular
+                      <span className="ml-2 align-middle label !text-[9px] label-amber">
+                        Most booked
                       </span>
                     )}
                   </span>
-                  <span className="text-xs text-neutral-300">{pkg.spec}</span>
+                  <span className="text-small text-fg-muted">{pkg.spec}</span>
                 </div>
                 <div className="text-right shrink-0">
                   <span className="font-heading text-xl font-bold text-amber block">
                     {formatINR(pkg.price)}
                   </span>
-                  <span className="text-[10px] text-neutral-400 font-mono">
-                    25% adv: {formatINR(pkg.price * 0.25)}
+                  <span className="text-[10px] text-fg-muted font-mono">
+                    25% adv {formatINR(pkg.price * 0.25)}
                   </span>
                 </div>
               </li>
             ))}
           </ul>
 
-          <Link
-            href="/book"
-            className="inline-flex items-center gap-2 px-9 py-4 rounded-full bg-amber text-ink font-bold text-xs uppercase tracking-widest hover:brightness-110 active:scale-[0.98] transition-all"
-          >
-            <span>Book Stage Rig</span>
-            <ArrowRight className="w-4 h-4" aria-hidden />
+          <Link href="/book" className="btn-primary">
+            Book stage rig
           </Link>
         </div>
       </section>
@@ -229,36 +212,32 @@ export function SafeZoneOverlays() {
         aria-label="Live stage gallery"
       >
         <div className={`max-w-4xl text-center space-y-6 ${SHADOW}`}>
-          <h2 className="font-heading text-3xl sm:text-6xl font-black text-white leading-tight">
-            High-Impact Live Arenas{' '}
-            <span className="text-amber">&amp; Grand Weddings</span>
+          <h2 className="font-heading text-h1 text-white">
+            Mandapams, college fests,{' '}
+            <span className="text-amber">arena concerts.</span>
           </h2>
 
-          <p className="max-w-xl mx-auto text-sm sm:text-base text-neutral-200 leading-relaxed">
-            From intimate acoustic mandapams to 12,000-attendee college fests,
-            every rig is tuned for intelligibility and punch the crowd remembers.
+          <p className="max-w-measure mx-auto text-body text-fg-soft leading-relaxed">
+            From a 300-seat reception to a 12,000-student cultural night, the rig
+            is tuned for intelligibility first — so the vows and the headliner are
+            both heard at the back.
           </p>
 
-          <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-12 pt-2 text-sm font-mono text-neutral-300">
-            <div>
-              <span className="text-amber text-xl font-bold block">130 dB Peak</span>
-              <span className="text-xs text-neutral-400">Distortion-free headroom</span>
-            </div>
-            <div>
-              <span className="text-amber text-xl font-bold block">Synchronized DMX</span>
-              <span className="text-xs text-neutral-400">Intelligent scene mapping</span>
-            </div>
-            <div>
-              <span className="text-white text-xl font-bold block">4-Hour Deployment</span>
-              <span className="text-xs text-neutral-400">Certified rigging crew</span>
-            </div>
+          <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-5 pt-2">
+            {[
+              ['130 dB peak', 'Headroom without distortion'],
+              ['Synchronized DMX', 'Scene-mapped lighting cues'],
+              ['4-hour deployment', 'Crew on site, rig up and tuned'],
+            ].map(([value, label]) => (
+              <div key={value}>
+                <span className="font-mono text-lg font-bold text-amber block">{value}</span>
+                <span className="label !text-[10px]">{label}</span>
+              </div>
+            ))}
           </div>
 
-          <Link
-            href="/gallery"
-            className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full border border-white/25 hover:border-amber hover:text-amber text-white font-mono text-xs uppercase tracking-wider transition-colors"
-          >
-            <span>View Gallery</span>
+          <Link href="/gallery" className="link-arrow !text-[11px]">
+            <span>View live stages</span>
             <ArrowRight className="w-3.5 h-3.5" aria-hidden />
           </Link>
         </div>
@@ -272,45 +251,32 @@ export function SafeZoneOverlays() {
         aria-label="Booking"
       >
         <div className={`max-w-3xl text-center space-y-6 ${SHADOW}`}>
-          <h2 className="font-heading text-3xl sm:text-5xl lg:text-6xl font-black text-white leading-tight">
-            Lock South India&apos;s Most{' '}
-            <span className="text-amber">Trusted Stage Rig</span>
+          <span className="label label-amber">Pongal, Vaikunta, wedding season</span>
+          <h2 className="font-heading text-h1 text-white">
+            Popular dates go months ahead.
           </h2>
 
-          <p className="text-sm sm:text-base text-neutral-200 leading-relaxed max-w-lg mx-auto">
-            Popular wedding and festival dates fill months ahead. Hold our
-            line-array rig and lead engineer today with an instant 25% deposit.
+          <p className="text-body text-fg-soft leading-relaxed max-w-measure mx-auto">
+            Hold the line-array rig and the lead engineer with an instant 25%
+            deposit. Balance is settled on site, after sound-check, before doors.
           </p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
-            <Link
-              href="/book"
-              className="w-full sm:w-auto px-9 py-4 rounded-full bg-amber text-ink font-bold text-xs uppercase tracking-widest hover:brightness-110 active:scale-[0.98] transition-all inline-flex items-center justify-center gap-2"
-            >
-              <Calendar className="w-4 h-4" aria-hidden />
-              <span>Book Stage Rig</span>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-5 pt-2">
+            <Link href="/book" className="btn-primary w-full sm:w-auto">
+              Book stage rig
             </Link>
 
-            <Link
-              href="/inquiry"
-              className="w-full sm:w-auto px-8 py-4 text-neutral-200 hover:text-white font-medium text-xs uppercase tracking-widest transition-colors"
-            >
-              <span>Request a Quote</span>
+            <Link href="/inquiry" className="link-arrow !text-[11px]">
+              <span>Request a quote</span>
+              <ArrowRight className="w-3.5 h-3.5" aria-hidden />
             </Link>
           </div>
 
-          <div className="pt-4 flex flex-wrap items-center justify-center gap-6 text-xs text-neutral-400 font-mono">
-            <a
-              href="tel:+919876543210"
-              className="flex items-center gap-1.5 hover:text-amber transition-colors"
-            >
-              <Phone className="w-3.5 h-3.5 text-amber" aria-hidden />
-              <span>+91 98765 43210</span>
+          <div className="pt-4 flex flex-wrap items-center justify-center gap-x-8 gap-y-2 label">
+            <a href="tel:+919876543210" className="link-plain font-mono">
+              +91 98765 43210
             </a>
-            <span className="flex items-center gap-1.5">
-              <Clock className="w-3.5 h-3.5" aria-hidden />
-              <span>Direct crew dispatch</span>
-            </span>
+            <span>Depot dispatch, 24/7 during shows</span>
           </div>
         </div>
       </section>

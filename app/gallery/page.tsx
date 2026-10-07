@@ -3,13 +3,10 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
-  Sparkles,
-  Volume2,
   Calendar,
   Users,
   MapPin,
   ArrowRight,
-  Filter,
   Play,
   Video,
   Image as ImageIcon,
@@ -17,10 +14,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Maximize2,
-  Lock,
   Upload,
-  Film,
-  ShieldCheck,
 } from 'lucide-react';
 
 interface PortfolioItem {
@@ -45,12 +39,12 @@ export default function GalleryPage() {
   const [isAdmin, setIsAdmin] = useState(false);
 
   const categories = [
-    { id: 'all', label: 'All Live Stages' },
-    { id: 'concert', label: 'Live Concerts' },
-    { id: 'wedding', label: 'Grand Weddings' },
-    { id: 'college', label: 'College Fests' },
-    { id: 'corporate', label: 'Corporate Summits' },
-    { id: 'temple', label: 'Heritage & Festivals' },
+    { id: 'all', label: 'All live stages' },
+    { id: 'concert', label: 'Concerts' },
+    { id: 'wedding', label: 'Weddings' },
+    { id: 'college', label: 'College fests' },
+    { id: 'corporate', label: 'Corporate' },
+    { id: 'temple', label: 'Festivals' },
   ];
 
   useEffect(() => {
@@ -81,9 +75,7 @@ export default function GalleryPage() {
   }, []);
 
   const filteredItems =
-    filter === 'all'
-      ? items
-      : items.filter((item) => item.category === filter);
+    filter === 'all' ? items : items.filter((item) => item.category === filter);
 
   const activeModalItem =
     selectedItemIndex !== null && filteredItems[selectedItemIndex]
@@ -105,226 +97,201 @@ export default function GalleryPage() {
   };
 
   return (
-    <div className="min-h-screen bg-ink text-white py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-      {/* Header */}
-      <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
-        <div className="flex items-center justify-center gap-2 text-amber text-xs font-mono uppercase tracking-[0.25em]">
-          <Sparkles className="w-3.5 h-3.5 text-amber" />
-          <span>PRODUCTION PORTFOLIO • 1,200+ LIVE STAGES</span>
+    <div className="min-h-screen bg-ink text-white">
+      {/* Header — statement left, admin action right */}
+      <div className="container-page pt-24 lg:pt-32 pb-8">
+        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
+          <div className="max-w-3xl">
+            <span className="label label-amber">
+              Production portfolio · 1,200+ live stages
+            </span>
+            <h1 className="font-heading text-h1 text-white mt-4">Stage proof</h1>
+            <p className="mt-5 text-body text-fg-muted leading-relaxed max-w-measure">
+              Photographs and video from finished builds — acoustic weddings,
+              college arenas and concert tours across South India. What you see
+              is gear we own and crew we employ.
+            </p>
+          </div>
+
+          {isAdmin && (
+            <Link href="/admin?tab=portfolio" className="link-arrow shrink-0">
+              <Upload className="w-3.5 h-3.5" aria-hidden />
+              <span>Publish new project</span>
+            </Link>
+          )}
         </div>
 
-        <h1 className="font-heading text-4xl sm:text-6xl font-black text-white tracking-tight">
-          Visual Heritage & <span className="text-gradient-amber">Stage Proof</span>
-        </h1>
-
-        <p className="text-sm sm:text-base text-neutral-300 font-normal leading-relaxed max-w-2xl mx-auto">
-          From intimate acoustic weddings to 12,000+ attendee college cultural arenas, explore authentic photos and live video recordings from our completed stage setups across South India.
-        </p>
-
-        {/* Admin Only Portfolio Manager Action */}
-        {isAdmin && (
-          <div className="pt-2 flex items-center justify-center gap-3">
-            <Link
-              href="/admin?tab=portfolio"
-              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-amber text-ink font-bold text-xs font-mono uppercase tracking-wider hover:brightness-110 transition-all active:scale-95"
+        {/* Category filters — text tabs on a hairline */}
+        <div className="mt-10 flex items-start gap-1 overflow-x-auto border-b border-white/[0.12] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          {categories.map((c) => (
+            <button
+              key={c.id}
+              onClick={() => {
+                setFilter(c.id);
+                setSelectedItemIndex(null);
+              }}
+              className={`tab ${filter === c.id ? 'is-active' : ''}`}
+              aria-current={filter === c.id ? 'page' : undefined}
             >
-              <Upload className="w-3.5 h-3.5 stroke-[2.5]" />
-              <span>Admin: + Upload New Project To Portfolio</span>
-            </Link>
-          </div>
-        )}
-
-        {/* Category Filters (Clean, No Box UI) */}
-        <div className="flex flex-wrap items-center justify-center gap-2 pt-6">
-          {categories.map((c) => {
-            const isActive = filter === c.id;
-            return (
-              <button
-                key={c.id}
-                onClick={() => {
-                  setFilter(c.id);
-                  setSelectedItemIndex(null);
-                }}
-                className={`px-5 py-2 rounded-full text-xs font-mono uppercase tracking-wider transition-all ${
-                  isActive
-                    ? 'bg-amber text-ink font-bold '
-                    : 'text-neutral-400 hover:text-white hover:bg-white/5'
-                }`}
-              >
-                {c.label}
-              </button>
-            );
-          })}
+              {c.label}
+            </button>
+          ))}
+          <span className="label ml-auto py-2.5 hidden sm:block">
+            {filteredItems.length} entries
+          </span>
         </div>
       </div>
 
-      {/* Showcase Grid */}
+      {/* Showcase grid — open media rows on hairlines */}
       {loading ? (
-        <div className="py-24 text-center">
-          <div className="w-10 h-10 border-2 border-amber border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="font-mono text-xs text-neutral-400">Loading finished stage productions & videos...</p>
+        <div className="container-page py-24">
+          <p className="label">Loading finished stage productions…</p>
         </div>
       ) : filteredItems.length === 0 ? (
-        <div className="py-24 text-center glass-card rounded-3xl p-8 border border-white/10 max-w-lg mx-auto">
-          <Volume2 className="w-12 h-12 text-amber mx-auto mb-3 opacity-60" />
-          <h3 className="font-heading text-lg font-bold text-white mb-2">No projects found in this category</h3>
-          <p className="text-xs text-neutral-400 mb-4">Select another category or view all live stages.</p>
-          <button
-            onClick={() => setFilter('all')}
-            className="px-5 py-2 rounded-xl bg-amber text-ink text-xs font-bold uppercase tracking-wider"
-          >
-            Show All Live Stages
-          </button>
+        <div className="container-page py-20 max-w-2xl">
+          <div className="border-t border-white/[0.12] pt-6">
+            <span className="label label-amber">Empty category</span>
+            <h2 className="font-heading text-h3 text-white mt-3">
+              Nothing published here yet
+            </h2>
+            <p className="mt-3 text-small text-fg-muted leading-relaxed max-w-measure">
+              No finished projects are tagged to this category. View every
+              stage we have published, or send the crew a date to shoot.
+            </p>
+            <button
+              onClick={() => setFilter('all')}
+              className="link-arrow mt-6"
+            >
+              <span>Show all live stages</span>
+              <ArrowRight className="w-3.5 h-3.5" aria-hidden />
+            </button>
+          </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 mb-24">
-          {filteredItems.map((item, index) => (
-            <div
-              key={item.id}
-              className="group flex flex-col justify-between transition-all duration-300 border-t border-white/15 hover:border-amber pt-4"
-            >
-              {/* Media Visual Container */}
-              <div
-                onClick={() => setSelectedItemIndex(index)}
-                className="h-64 w-full bg-neutral-950 rounded-2xl relative overflow-hidden cursor-pointer"
+        <div className="container-page pb-24">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-10 gap-y-12">
+            {filteredItems.map((item, index) => (
+              <article
+                key={item.id}
+                className="group border-t border-white/[0.12] hover:border-amber/60 transition-colors pt-4 flex flex-col"
               >
-                {item.mediaType === 'video' ? (
-                  <div className="w-full h-full relative">
-                    <video
-                      src={item.mediaUrl}
-                      preload="metadata"
-                      muted
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-90 group-hover:opacity-100"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30 pointer-events-none" />
-
-                    {/* Play Button Overlay */}
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="w-14 h-14 rounded-full bg-amber/90 text-ink flex items-center justify-center group-hover:scale-115 transition-all group-hover:bg-amber">
-                        <Play className="w-6 h-6 fill-current ml-0.5 text-ink" />
+                <div
+                  onClick={() => setSelectedItemIndex(index)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') setSelectedItemIndex(index);
+                  }}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`Open ${item.title}`}
+                  className="h-64 w-full bg-ink-raised relative overflow-hidden cursor-pointer"
+                >
+                  {item.mediaType === 'video' ? (
+                    <div className="w-full h-full relative">
+                      <video
+                        src={item.mediaUrl}
+                        preload="metadata"
+                        muted
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="w-14 h-14 bg-amber text-ink flex items-center justify-center transition-transform group-hover:scale-110">
+                          <Play className="w-6 h-6 fill-current ml-0.5" aria-hidden />
+                        </div>
+                      </div>
+                      <div className="absolute top-3 left-3 flex items-center gap-1.5 px-2 py-1 text-[10px] font-mono font-bold uppercase tracking-[0.14em] bg-black/75 text-amber">
+                        <Video className="w-3.5 h-3.5" aria-hidden />
+                        <span>Live video</span>
                       </div>
                     </div>
-
-                    {/* Video Tag */}
-                    <div className="absolute top-3 left-3 z-10 flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider bg-black/75 backdrop-blur-md text-amber border border-amber/40">
-                      <Video className="w-3.5 h-3.5 text-red-500 animate-pulse" />
-                      <span>Live Video Footage</span>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="w-full h-full relative">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={item.mediaUrl}
-                      alt={item.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30 pointer-events-none" />
-
-                    {/* Zoom icon badge */}
-                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/30">
-                      <div className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-md text-white flex items-center justify-center border border-white/30">
-                        <Maximize2 className="w-5 h-5" />
+                  ) : (
+                    <div className="w-full h-full relative">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={item.mediaUrl}
+                        alt={item.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/30">
+                        <Maximize2 className="w-5 h-5 text-white" aria-hidden />
+                      </div>
+                      <div className="absolute top-3 left-3 flex items-center gap-1.5 px-2 py-1 text-[10px] font-mono font-bold uppercase tracking-[0.14em] bg-black/75 text-amber">
+                        <ImageIcon className="w-3.5 h-3.5" aria-hidden />
+                        <span>{item.tag || 'Stage photo'}</span>
                       </div>
                     </div>
+                  )}
 
-                    {/* Image Tag */}
-                    <div className="absolute top-3 left-3 z-10 flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider bg-black/75 backdrop-blur-md text-amber border border-amber/40">
-                      <ImageIcon className="w-3.5 h-3.5 text-amber" />
-                      <span>{item.tag || 'Stage Photo'}</span>
-                    </div>
-                  </div>
-                )}
-
-                {/* Crowd Badge */}
-                {item.crowd && (
-                  <span className="absolute top-3 right-3 z-10 text-xs font-mono text-neutral-200 flex items-center gap-1 bg-black/70 backdrop-blur-md px-3 py-1 rounded-full border border-white/10">
-                    <Users className="w-3.5 h-3.5 text-amber" />
-                    <span>{item.crowd}</span>
-                  </span>
-                )}
-
-                {/* Location overlay */}
-                <div className="absolute bottom-3 left-3 right-3 z-10 flex items-center justify-between text-xs text-neutral-200 font-mono">
-                  <div className="flex items-center gap-1.5 truncate bg-black/70 backdrop-blur-md px-2.5 py-1 rounded-lg border border-white/10">
-                    <MapPin className="w-3.5 h-3.5 text-amber shrink-0" />
-                    <span className="truncate">{item.location}</span>
-                  </div>
-                  {item.tag && item.mediaType === 'video' && (
-                    <span className="text-[10px] uppercase font-bold text-amber bg-black/70 px-2 py-1 rounded-lg border border-white/10">
-                      {item.tag}
+                  {item.crowd && (
+                    <span className="absolute top-3 right-3 flex items-center gap-1.5 px-2 py-1 text-[11px] font-mono bg-black/75 text-fg">
+                      <Users className="w-3.5 h-3.5 text-amber" aria-hidden />
+                      <span>{item.crowd}</span>
                     </span>
                   )}
-                </div>
-              </div>
 
-              {/* Details (No Box UI) */}
-              <div className="pt-4 space-y-3 flex-1 flex flex-col justify-between">
-                <div>
-                  <h3
-                    onClick={() => setSelectedItemIndex(index)}
-                    className="font-heading text-xl font-bold text-white group-hover:text-amber transition-colors cursor-pointer"
-                  >
-                    {item.title}
-                  </h3>
-                  {item.specs && (
-                    <div className="text-xs text-neutral-300 font-mono mt-2">
-                      <span className="text-amber font-semibold block mb-0.5">Rig Specifications:</span>
-                      <p className="text-neutral-400">{item.specs}</p>
-                    </div>
-                  )}
+                  <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between gap-3 text-[11px] font-mono text-fg">
+                    <span className="flex items-center gap-1.5 truncate bg-black/75 px-2 py-1">
+                      <MapPin className="w-3.5 h-3.5 text-amber shrink-0" aria-hidden />
+                      <span className="truncate">{item.location}</span>
+                    </span>
+                  </div>
                 </div>
 
-                <div className="pt-3 border-t border-white/5 flex items-center justify-between text-xs">
-                  <span className="text-neutral-400 font-mono">100% In-House Gear</span>
-                  <Link
-                    href={`/book?specs=${encodeURIComponent(item.title)}`}
-                    className="inline-flex items-center gap-1.5 text-amber font-medium hover:underline"
-                  >
-                    <span>Book Similar Rig</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </Link>
+                <div className="pt-4 flex-1 flex flex-col justify-between gap-4">
+                  <div>
+                    <span className="label label-amber">{item.category}</span>
+                    <h3
+                      onClick={() => setSelectedItemIndex(index)}
+                      className="mt-2 font-heading text-h4 text-white group-hover:text-amber transition-colors cursor-pointer"
+                    >
+                      {item.title}
+                    </h3>
+                    {item.specs && (
+                      <p className="mt-2 text-spec font-mono text-fg-muted leading-relaxed">
+                        {item.specs}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="border-t border-white/[0.12] pt-3 flex items-center justify-between gap-4">
+                    <span className="label">100% in-house gear</span>
+                    <Link
+                      href={`/book?specs=${encodeURIComponent(item.title)}`}
+                      className="link-arrow"
+                    >
+                      <span>Book similar rig</span>
+                      <ArrowRight className="w-3.5 h-3.5" aria-hidden />
+                    </Link>
+                  </div>
                 </div>
-              </div>
-            </div>
-          ))}
+              </article>
+            ))}
+          </div>
         </div>
       )}
 
-      {/* Lightbox Cinema Modal (for Video Playback & Fullscreen Photos) */}
+      {/* Lightbox — framed modal surface (the one box the system allows) */}
       {activeModalItem && (
         <div className="fixed inset-0 z-50 bg-black/95 backdrop-blur-lg flex items-center justify-center p-3 sm:p-6">
-          <div className="relative max-w-5xl w-full glass-card rounded-3xl border border-white/20 overflow-hidden shadow-2xl flex flex-col max-h-[92vh]">
-            {/* Modal Header */}
-            <div className="flex items-center justify-between p-4 sm:p-6 border-b border-white/10 bg-neutral-950/80">
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs font-mono uppercase tracking-widest text-amber font-bold">
-                    {activeModalItem.category} • {activeModalItem.location}
-                  </span>
-                  {activeModalItem.crowd && (
-                    <span className="text-xs font-mono text-neutral-400 flex items-center gap-1">
-                      • <Users className="w-3 h-3 text-amber" /> {activeModalItem.crowd}
-                    </span>
-                  )}
-                </div>
-                <h3 className="font-heading text-xl sm:text-2xl font-bold text-white">
+          <div className="relative max-w-5xl w-full glass-card overflow-hidden flex flex-col max-h-[92vh]">
+            <div className="flex items-start justify-between gap-4 p-4 sm:p-6 border-b border-white/[0.12]">
+              <div>
+                <span className="label label-amber">
+                  {activeModalItem.category} · {activeModalItem.location}
+                  {activeModalItem.crowd ? ` · ${activeModalItem.crowd}` : ''}
+                </span>
+                <h3 className="mt-1.5 font-heading text-h3 text-white">
                   {activeModalItem.title}
                 </h3>
               </div>
-
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setSelectedItemIndex(null)}
-                  className="p-2.5 rounded-full bg-white/10 text-white hover:bg-white/20 hover:scale-105 transition-all"
-                  aria-label="Close modal"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
+              <button
+                onClick={() => setSelectedItemIndex(null)}
+                aria-label="Close preview"
+                className="p-2 text-fg-muted hover:text-amber transition-colors shrink-0"
+              >
+                <X className="w-5 h-5" aria-hidden />
+              </button>
             </div>
 
-            {/* Media Display Area */}
             <div className="flex-1 bg-black flex items-center justify-center relative min-h-[350px] max-h-[60vh] overflow-hidden">
               {activeModalItem.mediaType === 'video' ? (
                 <video
@@ -344,74 +311,69 @@ export default function GalleryPage() {
                 />
               )}
 
-              {/* Navigation Arrows */}
               {filteredItems.length > 1 && (
                 <>
                   <button
                     onClick={handlePrev}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-black/60 hover:bg-amber hover:text-ink text-white border border-white/20 flex items-center justify-center transition-all backdrop-blur-sm"
                     aria-label="Previous item"
+                    className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/70 hover:bg-amber hover:text-ink text-white border border-white/20 flex items-center justify-center transition-colors"
                   >
-                    <ChevronLeft className="w-6 h-6" />
+                    <ChevronLeft className="w-5 h-5" aria-hidden />
                   </button>
                   <button
                     onClick={handleNext}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-black/60 hover:bg-amber hover:text-ink text-white border border-white/20 flex items-center justify-center transition-all backdrop-blur-sm"
                     aria-label="Next item"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/70 hover:bg-amber hover:text-ink text-white border border-white/20 flex items-center justify-center transition-colors"
                   >
-                    <ChevronRight className="w-6 h-6" />
+                    <ChevronRight className="w-5 h-5" aria-hidden />
                   </button>
                 </>
               )}
             </div>
 
-            {/* Modal Footer with Rig Specs and Direct Booking CTA */}
-            <div className="p-4 sm:p-6 border-t border-white/10 bg-neutral-950/80 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div className="space-y-1 max-w-xl">
+            <div className="p-4 sm:p-6 border-t border-white/[0.12] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="space-y-1.5 max-w-xl">
                 {activeModalItem.specs && (
-                  <div className="text-xs font-mono text-neutral-300">
-                    <span className="text-amber font-semibold">Stage & Audio Rig: </span>
+                  <p className="text-spec font-mono text-fg-muted">
+                    <span className="text-amber font-semibold">Stage & audio rig — </span>
                     {activeModalItem.specs}
-                  </div>
+                  </p>
                 )}
-                <div className="text-[11px] font-mono text-neutral-400">
-                  Item {selectedItemIndex !== null ? selectedItemIndex + 1 : 1} of {filteredItems.length} • Authentic footage from Eswari Sound System archive
-                </div>
+                <p className="label">
+                  {selectedItemIndex !== null ? selectedItemIndex + 1 : 1} of{' '}
+                  {filteredItems.length} · Eswari Sound System archive
+                </p>
               </div>
 
-              <div className="shrink-0 flex items-center gap-3">
-                <Link
-                  href="/book"
-                  className="px-6 py-2.5 rounded-full bg-amber text-ink font-bold text-xs uppercase tracking-widest hover:brightness-110 transition-all flex items-center gap-2"
-                >
-                  <Calendar className="w-4 h-4" />
-                  <span>Book This Rig</span>
-                </Link>
-              </div>
+              <Link href="/book" className="btn-primary shrink-0">
+                <Calendar className="w-4 h-4" aria-hidden />
+                <span>Book this rig</span>
+              </Link>
             </div>
           </div>
         </div>
       )}
 
-      {/* Call to Action Section (Clean, No Box UI) */}
-      <div className="border-t border-white/10 pt-16 text-center space-y-4 max-w-3xl mx-auto">
-        <div className="text-amber text-xs font-mono uppercase tracking-[0.25em]">
-          // DIRECT PROVIDER DATE LOCKING
-        </div>
-        <h3 className="font-heading text-2xl sm:text-4xl font-extrabold text-white">
-          Plan Your Event With South India’s Most Trusted Rig
-        </h3>
-        <p className="text-xs sm:text-sm text-neutral-300 max-w-xl mx-auto leading-relaxed">
-          Reserve our line-array audio and intelligent lighting directly. Instant date locking with a 25% advance.
-        </p>
-        <div className="pt-3">
-          <Link
-            href="/book"
-            className="inline-flex items-center gap-2 px-9 py-4 rounded-full bg-amber text-ink font-bold text-xs uppercase tracking-widest hover:brightness-110 transition-all "
-          >
-            <Calendar className="w-4 h-4" />
-            <span>Check Date & Book Advance</span>
-          </Link>
+      {/* Closing CTA */}
+      <div className="border-t border-white/[0.12]">
+        <div className="container-page section-tight max-w-4xl">
+          <span className="label label-amber">Direct provider · date locking</span>
+          <h2 className="font-heading text-h2 text-white mt-3">
+            Plan your event with the rig in these frames
+          </h2>
+          <p className="mt-4 text-body text-fg-muted leading-relaxed max-w-measure">
+            Reserve the same line-array audio and intelligent lighting
+            directly. Dates lock with a 25% advance — no broker, no sub-rental.
+          </p>
+          <div className="mt-8 flex flex-wrap items-center gap-6">
+            <Link href="/book" className="btn-primary">
+              <span>Check dates</span>
+              <ArrowRight className="w-4 h-4" aria-hidden />
+            </Link>
+            <Link href="/packages" className="link-arrow">
+              <span>See day rates</span>
+            </Link>
+          </div>
         </div>
       </div>
     </div>

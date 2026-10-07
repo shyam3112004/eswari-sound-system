@@ -6,20 +6,14 @@ import Link from 'next/link';
 import {
   Search,
   Calendar,
-  Volume2,
   CheckCircle2,
-  AlertCircle,
   Phone,
-  Mail,
   MapPin,
   ArrowRight,
   ShieldCheck,
   Loader2,
   CreditCard,
   Clock,
-  Sparkles,
-  Check,
-  Package,
 } from 'lucide-react';
 import { formatINR } from '@/lib/utils';
 
@@ -38,7 +32,9 @@ function MyBookingsContent() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`/api/my-bookings?query=${encodeURIComponent(searchTerm.trim())}`);
+      const res = await fetch(
+        `/api/my-bookings?query=${encodeURIComponent(searchTerm.trim())}`
+      );
       const data = await res.json();
 
       if (!res.ok || !data.success) {
@@ -76,304 +72,333 @@ function MyBookingsContent() {
   };
 
   return (
-    <div className="min-h-screen bg-ink text-white py-16 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto">
-      {/* Header */}
-      <div className="text-center max-w-2xl mx-auto mb-14 space-y-4">
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass-card border border-amber/30 text-amber text-xs font-mono uppercase tracking-widest">
-          <ShieldCheck className="w-3.5 h-3.5 text-amber" />
-          <span>Customer Order Tracker</span>
-        </div>
-
-        <h1 className="font-heading text-3xl sm:text-5xl font-black text-white tracking-tight">
-          Track Your <span className="text-gradient-amber">Booking & Stage Rig</span>
+    <div className="min-h-screen bg-ink text-white">
+      {/* Header + lookup field */}
+      <div className="container-page pt-24 lg:pt-32 pb-10 max-w-4xl">
+        <span className="label label-amber">Customer order tracker</span>
+        <h1 className="font-heading text-h1 text-white mt-4">
+          Track your booking
         </h1>
-
-        <p className="text-xs sm:text-sm text-neutral-300 leading-relaxed">
-          Enter the 10-digit mobile number or email address used during booking to check your confirmation call status and payment receipts.
+        <p className="mt-5 text-body text-fg-muted leading-relaxed max-w-measure">
+          Enter the mobile number or email used at booking to see your
+          confirmation call status, advance receipts and what happens on show
+          day.
         </p>
-      </div>
 
-      {/* Search Bar */}
-      <div className="max-w-xl mx-auto mb-16">
-        <form onSubmit={handleSearch} className="flex gap-2">
-          <div className="relative flex-1">
-            <Search className="w-4 h-4 text-neutral-400 absolute left-4 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              required
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Enter mobile (e.g. 9876543210) or email..."
-              className="w-full pl-11 pr-4 py-3.5 rounded-2xl bg-ink/90 border border-white/15 text-white placeholder-neutral-500 text-sm focus:outline-none focus:border-amber focus:ring-1 focus:ring-amber font-mono"
-            />
+        <form onSubmit={handleSearch} className="mt-10 flex flex-col sm:flex-row gap-5 sm:items-end">
+          <div className="flex-1">
+            <label className="field-label" htmlFor="lookup">
+              Mobile number or email
+            </label>
+            <div className="relative">
+              <Search
+                className="w-4 h-4 text-fg-muted absolute left-0 top-1/2 -translate-y-1/2 pointer-events-none"
+                aria-hidden
+              />
+              <input
+                id="lookup"
+                type="text"
+                required
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="9876543210 or name@example.com"
+                className="field pl-7 font-mono"
+              />
+            </div>
           </div>
-          <button
-            type="submit"
-            disabled={loading}
-            className="px-6 py-3.5 rounded-2xl bg-amber text-ink font-semibold text-xs uppercase tracking-wider hover:brightness-110 active:scale-95 transition-all disabled:opacity-60 flex items-center gap-2"
-          >
-            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <span>Search</span>}
+          <button type="submit" disabled={loading} className="btn-primary shrink-0">
+            {loading ? (
+              <Loader2 className="w-4 h-4 animate-spin" aria-hidden />
+            ) : (
+              <>
+                <span>Look up</span>
+                <ArrowRight className="w-4 h-4" aria-hidden />
+              </>
+            )}
           </button>
         </form>
 
         {error && (
-          <div className="mt-4 p-3 rounded-xl bg-red-950/50 border border-red-500/30 text-red-300 text-xs flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />
-            <span>{error}</span>
+          <div className="alert alert-error mt-6" role="alert">
+            {error}
           </div>
         )}
       </div>
 
-      {/* Results List */}
+      {/* Results — open records on hairlines */}
       {bookings !== null && (
-        <div className="space-y-6">
-          <div className="flex items-center justify-between border-b border-white/10 pb-3">
-            <h2 className="font-heading text-lg font-bold text-white">
-              Found Bookings ({bookings.length})
-            </h2>
-            <span className="text-xs font-mono text-neutral-400">
-              Query: {query}
-            </span>
-          </div>
-
-          {bookings.length === 0 ? (
-            <div className="glass-card rounded-3xl p-12 text-center space-y-4 border border-white/10 max-w-lg mx-auto">
-              <Calendar className="w-10 h-10 text-neutral-500 mx-auto" />
-              <h3 className="font-heading text-lg font-bold text-white">No Matching Records Found</h3>
-              <p className="text-xs text-neutral-400 leading-relaxed">
-                We couldn't locate any active stage bookings with that phone number or email. If you reserved directly via phone, our dispatcher will link your record shortly.
-              </p>
-              <div className="pt-2">
-                <Link
-                  href="/book"
-                  className="inline-block px-6 py-2.5 rounded-full bg-amber text-ink text-xs font-semibold uppercase tracking-wider"
-                >
-                  Book A Stage Rig Now
-                </Link>
-              </div>
+        <div className="border-t border-white/[0.12]">
+          <div className="container-page pt-8 pb-24 max-w-4xl">
+            <div className="flex flex-wrap items-baseline justify-between gap-4 border-b border-white/[0.12] pb-4">
+              <h2 className="font-heading text-h4 text-white">
+                Found bookings ({bookings.length})
+              </h2>
+              <span className="label">Query · {query}</span>
             </div>
-          ) : (
-            <div className="space-y-6">
-              {bookings.map((b) => {
-                const isCallDone = b.status === 'APPROVED' || b.status === 'CONFIRMED' || b.paymentStatus === 'ADVANCE_PAID';
-                const isAdvancePaid = b.paymentStatus === 'ADVANCE_PAID';
 
-                return (
-                  <div
-                    key={b.id}
-                    className="glass-card-amber rounded-3xl p-6 sm:p-8 border border-amber/30 space-y-6 shadow-xl"
-                  >
-                    {/* Top Identity Row */}
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-4">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="font-heading text-xl font-bold text-white">
-                            {b.packageName}
-                          </span>
-                          <span className="text-xs font-mono text-amber font-bold px-2 py-0.5 rounded bg-amber/10 border border-amber/20">
-                            #{b.id.slice(0, 8)}
-                          </span>
-                        </div>
-                        <div className="text-xs text-neutral-400 font-mono mt-1">
-                          Booked for: <strong className="text-white">{b.customerName}</strong> • {b.customerPhone}
-                        </div>
-                      </div>
+            {bookings.length === 0 ? (
+              <div className="pt-8 max-w-measure">
+                <span className="label label-amber">No match</span>
+                <h3 className="font-heading text-h3 text-white mt-3">
+                  No records under that number
+                </h3>
+                <p className="mt-3 text-small text-fg-muted leading-relaxed">
+                  We could not find an active stage booking for that phone
+                  number or email. If you reserved by phone, the dispatcher
+                  will link your record shortly — or check with the depot
+                  line.
+                </p>
+                <div className="mt-7 flex flex-wrap items-center gap-6">
+                  <Link href="/book" className="btn-primary">
+                    Book a stage rig
+                  </Link>
+                  <a href="tel:+919876543210" className="link-arrow">
+                    <span>Call the depot</span>
+                  </a>
+                </div>
+              </div>
+            ) : (
+              <div>
+                {bookings.map((b) => {
+                  const isCallDone =
+                    b.status === 'APPROVED' ||
+                    b.status === 'CONFIRMED' ||
+                    b.paymentStatus === 'ADVANCE_PAID';
+                  const isAdvancePaid = b.paymentStatus === 'ADVANCE_PAID';
 
-                      <div className="text-right">
+                  const STEPS = [
+                    {
+                      num: '01',
+                      title: 'Request placed',
+                      note: 'Order logged in the dispatch queue',
+                      state: 'done',
+                    },
+                    {
+                      num: '02',
+                      title: 'Operations call',
+                      note: isCallDone
+                        ? 'Venue and power verified'
+                        : 'Engineer calling your phone',
+                      state: isCallDone ? 'done' : 'active',
+                    },
+                    {
+                      num: '03',
+                      title: '25% advance',
+                      note: isAdvancePaid
+                        ? 'Paid · date locked'
+                        : isCallDone
+                        ? 'Ready to pay and lock'
+                        : 'Unlocks after the call',
+                      state: isAdvancePaid ? 'done' : isCallDone ? 'active' : 'idle',
+                    },
+                    {
+                      num: '04',
+                      title: 'Sound-check & gig',
+                      note: '75% balance due on site',
+                      state: 'idle',
+                    },
+                  ];
+
+                  return (
+                    <article key={b.id} className="border-b border-white/[0.12] py-9">
+                      {/* Identity row */}
+                      <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-3">
+                        <div>
+                          <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1.5">
+                            <h3 className="font-heading text-h3 text-white">
+                              {b.packageName}
+                            </h3>
+                            <span className="label">#{b.id.slice(0, 8)}</span>
+                          </div>
+                          <p className="mt-1.5 text-small text-fg-muted font-mono">
+                            {b.customerName} · {b.customerPhone}
+                          </p>
+                        </div>
                         <span
-                          className={`px-3 py-1 rounded-full text-xs font-mono font-bold uppercase tracking-wider ${
+                          className={`label shrink-0 ${
                             isAdvancePaid
-                              ? 'bg-emerald-950/80 border border-emerald-500/40 text-emerald-400'
+                              ? 'label-amber'
                               : isCallDone
-                              ? 'bg-sky-950/80 border border-sky-500/40 text-sky-400'
-                              : 'bg-amber-950/80 border border-amber-500/40 text-amber-400 animate-pulse'
+                              ? 'text-fg-soft'
+                              : 'text-amber animate-pulse'
                           }`}
                         >
                           {isAdvancePaid
-                            ? 'Date Locked'
+                            ? 'Date locked'
                             : isCallDone
-                            ? 'Call Confirmed · Pay Advance'
-                            : 'Awaiting Confirmation Call'}
+                            ? 'Call confirmed · advance due'
+                            : 'Awaiting confirmation call'}
                         </span>
                       </div>
-                    </div>
 
-                    {/* 4-STEP VISUAL PROGRESSION */}
-                    <div className="bg-ink/60 rounded-2xl p-4 sm:p-5 border border-white/10">
-                      <span className="text-[11px] font-mono uppercase text-amber tracking-wider block mb-4 font-semibold">
-                        Live Booking Progress
-                      </span>
-
-                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        {/* Step 1 */}
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2 text-emerald-400 font-mono text-xs font-bold">
-                            <CheckCircle2 className="w-4 h-4" />
-                            <span>1. Request Placed</span>
-                          </div>
-                          <p className="text-[11px] text-neutral-400">Order logged in dispatch queue</p>
-                        </div>
-
-                        {/* Step 2 */}
-                        <div className="space-y-1">
-                          <div
-                            className={`flex items-center gap-2 font-mono text-xs font-bold ${
-                              isCallDone ? 'text-emerald-400' : 'text-amber'
-                            }`}
-                          >
-                            {isCallDone ? (
-                              <CheckCircle2 className="w-4 h-4" />
-                            ) : (
-                              <Phone className="w-4 h-4 animate-pulse" />
-                            )}
-                            <span>2. Operations Call</span>
-                          </div>
-                          <p className="text-[11px] text-neutral-400">
-                            {isCallDone ? 'Venue & power verified' : 'Engineer calling your phone'}
-                          </p>
-                        </div>
-
-                        {/* Step 3 */}
-                        <div className="space-y-1">
-                          <div
-                            className={`flex items-center gap-2 font-mono text-xs font-bold ${
-                              isAdvancePaid
-                                ? 'text-emerald-400'
-                                : isCallDone
-                                ? 'text-sky-400'
-                                : 'text-neutral-500'
-                            }`}
-                          >
-                            {isAdvancePaid ? (
-                              <CheckCircle2 className="w-4 h-4" />
-                            ) : (
-                              <CreditCard className="w-4 h-4" />
-                            )}
-                            <span>3. 25% Advance</span>
-                          </div>
-                          <p className="text-[11px] text-neutral-400">
-                            {isAdvancePaid
-                              ? `₹${(b.advanceAmount / 100).toLocaleString('en-IN')} paid • locked`
-                              : isCallDone
-                              ? 'Ready to pay & lock date'
-                              : 'Unlocks post-call'}
-                          </p>
-                        </div>
-
-                        {/* Step 4 */}
-                        <div className="space-y-1">
-                          <div className="flex items-center gap-2 font-mono text-xs font-bold text-neutral-500">
-                            <Clock className="w-4 h-4" />
-                            <span>4. Sound-Check & Gig</span>
-                          </div>
-                          <p className="text-[11px] text-neutral-400">75% balance due on-site</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Event & Logistics Summary */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2 text-neutral-300 font-mono">
-                          <Calendar className="w-3.5 h-3.5 text-amber" />
-                          <span>Event Date: <strong className="text-white">{new Date(b.eventDate).toDateString()}</strong></span>
-                        </div>
-                        <div className="flex items-center gap-2 text-neutral-300">
-                          <MapPin className="w-3.5 h-3.5 text-amber shrink-0" />
-                          <span>Venue: {b.venueAddress}</span>
-                        </div>
-                      </div>
-
-                      <div className="space-y-1.5 font-mono text-right md:text-right bg-white/5 p-3 rounded-xl border border-white/5">
-                        <div className="flex justify-between text-neutral-400">
-                          <span>Total Rental:</span>
-                          <span className="text-white font-bold">{formatINR(b.totalAmount)}</span>
-                        </div>
-                        <div className="flex justify-between text-amber">
-                          <span>25% Advance:</span>
-                          <span className="font-bold">{formatINR(b.advanceAmount)}</span>
-                        </div>
-                        <div className="flex justify-between text-neutral-400 text-[11px]">
-                          <span>Balance on Event Day:</span>
-                          <span>{formatINR(b.balanceAmount)}</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Included Materials Breakdown */}
-                    {b.bookingMaterials && b.bookingMaterials.length > 0 && (
-                      <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 text-xs space-y-2">
-                        <div className="text-[11px] font-mono text-haze uppercase font-semibold flex items-center gap-1.5">
-                          <Package className="w-3.5 h-3.5 text-haze" />
-                          <span>Selected Rental Equipment ({b.bookingMaterials.length} items):</span>
-                        </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] font-mono text-neutral-300">
-                          {b.bookingMaterials.map((bm: any) => (
-                            <div key={bm.id} className="flex justify-between bg-black/40 px-2.5 py-1.5 rounded-lg border border-white/5">
-                              <span>{bm.material?.name || 'Equipment'} × {bm.quantity}</span>
-                              <span className="text-amber">{formatINR(bm.totalPrice || bm.pricePerDay * bm.quantity)}</span>
+                      {/* Four-step progress — numerals on hairlines */}
+                      <div className="mt-7">
+                        <span className="label">Live booking progress</span>
+                        <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8">
+                          {STEPS.map((s) => (
+                            <div
+                              key={s.num}
+                              className={`border-t py-4 ${
+                                s.state === 'done'
+                                  ? 'border-amber/60'
+                                  : s.state === 'active'
+                                  ? 'border-amber/30'
+                                  : 'border-white/[0.12]'
+                              }`}
+                            >
+                              <div
+                                className={`flex items-center gap-2 text-spec font-mono font-bold ${
+                                  s.state === 'done'
+                                    ? 'text-amber'
+                                    : s.state === 'active'
+                                    ? 'text-fg'
+                                    : 'text-fg-muted'
+                                }`}
+                              >
+                                {s.state === 'done' ? (
+                                  <CheckCircle2 className="w-4 h-4" aria-hidden />
+                                ) : s.state === 'active' ? (
+                                  s.num === '02' ? (
+                                    <Phone className="w-4 h-4 animate-pulse" aria-hidden />
+                                  ) : (
+                                    <CreditCard className="w-4 h-4" aria-hidden />
+                                  )
+                                ) : (
+                                  <Clock className="w-4 h-4" aria-hidden />
+                                )}
+                                <span>
+                                  {s.num} · {s.title}
+                                </span>
+                              </div>
+                              <p className="mt-1.5 text-small text-fg-muted">
+                                {s.note}
+                              </p>
                             </div>
                           ))}
                         </div>
                       </div>
-                    )}
 
-                    {/* Action Row */}
-                    <div className="pt-2 border-t border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3">
-                      <div className="text-xs text-neutral-400 font-mono">
-                        {!isCallDone ? (
-                          <span>Expecting call from: <strong className="text-white">+91 98765 43210</strong></span>
-                        ) : isAdvancePaid ? (
-                          <span className="text-emerald-400 flex items-center gap-1.5">
-                            <ShieldCheck className="w-4 h-4" />
-                            <span>Date secured in warehouse calendar</span>
-                          </span>
-                        ) : (
-                          <span className="text-amber">Phone confirmed! Lock your date with 25% deposit:</span>
-                        )}
-                      </div>
-
-                      <div>
-                        {isAdvancePaid ? (
-                          <Link
-                            href={`/pay?bookingId=${b.id}`}
-                            className="px-5 py-2.5 rounded-full glass-card border border-white/20 text-white hover:bg-white/10 text-xs font-semibold uppercase tracking-wider flex items-center gap-2"
-                          >
-                            <span>View Official Invoice & Receipt</span>
-                            <ArrowRight className="w-3.5 h-3.5" />
-                          </Link>
-                        ) : isCallDone ? (
-                          <Link
-                            href={`/pay?bookingId=${b.id}`}
-                            className="px-6 py-3 rounded-full bg-amber text-ink hover:brightness-110 text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all"
-                          >
-                            <CreditCard className="w-4 h-4" />
-                            <span>Pay 25% Advance ({formatINR(b.advanceAmount)})</span>
-                          </Link>
-                        ) : (
-                          <div className="flex items-center gap-2">
-                            <a
-                              href="tel:+919876543210"
-                              className="px-4 py-2 rounded-full glass-card border border-amber/30 text-amber hover:bg-amber/10 text-xs font-mono uppercase tracking-wider flex items-center gap-1.5"
-                            >
-                              <Phone className="w-3.5 h-3.5" />
-                              <span>Call Us Directly</span>
-                            </a>
-                            <Link
-                              href={`/pay?bookingId=${b.id}`}
-                              className="px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 text-neutral-200 text-xs font-mono tracking-wider"
-                            >
-                              View Order
-                            </Link>
+                      {/* Logistics + money on hairlines */}
+                      <div className="mt-7 grid grid-cols-1 lg:grid-cols-2 gap-x-14">
+                        <div className="text-small">
+                          <div className="border-t border-white/[0.12] py-3.5 flex items-start justify-between gap-4">
+                            <span className="label flex items-center gap-2">
+                              <Calendar className="w-3.5 h-3.5" aria-hidden />
+                              Event date
+                            </span>
+                            <span className="font-mono text-white text-right">
+                              {new Date(b.eventDate).toDateString()}
+                            </span>
                           </div>
-                        )}
+                          <div className="border-t border-white/[0.12] py-3.5 flex items-start justify-between gap-4">
+                            <span className="label flex items-center gap-2">
+                              <MapPin className="w-3.5 h-3.5 shrink-0" aria-hidden />
+                              Venue
+                            </span>
+                            <span className="text-fg-soft text-right max-w-[62%]">
+                              {b.venueAddress}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="text-small mt-6 lg:mt-0">
+                          <div className="border-t border-white/[0.12] py-3.5 flex justify-between gap-4">
+                            <span className="label">Total rental</span>
+                            <span className="font-mono text-white font-bold tabular-nums">
+                              {formatINR(b.totalAmount)}
+                            </span>
+                          </div>
+                          <div className="border-t border-white/[0.12] py-3.5 flex justify-between gap-4">
+                            <span className="label label-amber">25% advance</span>
+                            <span className="font-mono text-amber font-bold tabular-nums">
+                              {formatINR(b.advanceAmount)}
+                            </span>
+                          </div>
+                          <div className="border-t border-white/[0.12] py-3.5 flex justify-between gap-4">
+                            <span className="label">Balance on event day</span>
+                            <span className="font-mono text-fg-soft tabular-nums">
+                              {formatINR(b.balanceAmount)}
+                            </span>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
+
+                      {/* Included materials */}
+                      {b.bookingMaterials && b.bookingMaterials.length > 0 && (
+                        <div className="mt-7 border-t border-white/[0.12] pt-5">
+                          <span className="label">
+                            Rental equipment ({b.bookingMaterials.length})
+                          </span>
+                          <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-x-10 text-spec font-mono">
+                            {b.bookingMaterials.map((bm: any) => (
+                              <div
+                                key={bm.id}
+                                className="flex justify-between gap-4 py-1.5 border-b border-white/[0.07]"
+                              >
+                                <span className="text-fg-muted">
+                                  {bm.material?.name || 'Equipment'} × {bm.quantity}
+                                </span>
+                                <span className="text-amber tabular-nums">
+                                  {formatINR(
+                                    bm.totalPrice || bm.pricePerDay * bm.quantity
+                                  )}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Action row */}
+                      <div className="mt-7 border-t border-white/[0.12] pt-5 flex flex-col sm:flex-row sm:items-center justify-between gap-5">
+                        <div className="label max-w-[46ch]">
+                          {!isCallDone ? (
+                            <span>
+                              Expecting the operations call from{' '}
+                              <span className="text-fg-soft">+91 98765 43210</span>
+                            </span>
+                          ) : isAdvancePaid ? (
+                            <span className="label-amber flex items-center gap-1.5">
+                              <ShieldCheck className="w-3.5 h-3.5" aria-hidden />
+                              <span>Date secured in the warehouse calendar</span>
+                            </span>
+                          ) : (
+                            <span>
+                              Call done. Lock the date with the 25% deposit.
+                            </span>
+                          )}
+                        </div>
+
+                        <div className="flex flex-wrap items-center gap-6 shrink-0">
+                          {isAdvancePaid ? (
+                            <Link href={`/pay?bookingId=${b.id}`} className="link-arrow">
+                              <span>View invoice &amp; receipt</span>
+                              <ArrowRight className="w-3.5 h-3.5" aria-hidden />
+                            </Link>
+                          ) : isCallDone ? (
+                            <Link href={`/pay?bookingId=${b.id}`} className="btn-primary">
+                              <CreditCard className="w-4 h-4" aria-hidden />
+                              <span>Pay {formatINR(b.advanceAmount)} advance</span>
+                            </Link>
+                          ) : (
+                            <>
+                              <a href="tel:+919876543210" className="link-arrow label-amber">
+                                <Phone className="w-3.5 h-3.5" aria-hidden />
+                                <span>Call us directly</span>
+                              </a>
+                              <Link href={`/pay?bookingId=${b.id}`} className="link-arrow">
+                                <span>View order</span>
+                              </Link>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>
@@ -384,9 +409,9 @@ export default function MyBookingsPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen flex items-center justify-center text-amber font-mono text-xs">
-          <Loader2 className="w-6 h-6 animate-spin mr-2" />
-          <span>Loading booking tracker...</span>
+        <div className="min-h-screen flex items-center justify-center gap-2 text-amber font-mono text-xs">
+          <Loader2 className="w-6 h-6 animate-spin" aria-hidden />
+          <span>Loading booking tracker…</span>
         </div>
       }
     >

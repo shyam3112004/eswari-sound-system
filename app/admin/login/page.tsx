@@ -2,7 +2,7 @@
 
 import React, { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Volume2, Lock, Mail, Eye, EyeOff, ShieldCheck, ArrowRight, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, ArrowRight, Loader2 } from 'lucide-react';
 
 function LoginForm() {
   const router = useRouter();
@@ -43,70 +43,65 @@ function LoginForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5">
+    <form onSubmit={handleSubmit} className="space-y-8">
       {error && (
-        <div className="p-3.5 rounded-xl bg-red-950/50 border border-red-500/30 text-red-300 text-xs flex items-center gap-2">
-          <span className="w-1.5 h-1.5 rounded-full bg-red-400 shrink-0" />
-          <span>{error}</span>
+        <div className="alert alert-error" role="alert">
+          {error}
         </div>
       )}
 
       <div>
-        <label className="block text-xs font-mono uppercase tracking-wider text-neutral-300 mb-1.5">
-          Staff Email
+        <label className="field-label" htmlFor="admin-email">
+          Staff email
         </label>
-        <div className="relative">
-          <Mail className="w-4 h-4 text-neutral-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-          <input
-            type="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="admin@eswarisound.com"
-            className="w-full pl-10 pr-4 py-3 rounded-xl bg-ink/80 border border-white/10 text-white placeholder-neutral-500 text-sm focus:outline-none focus:border-amber focus:ring-1 focus:ring-amber transition-all"
-          />
-        </div>
+        <input
+          id="admin-email"
+          type="email"
+          required
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="admin@eswarisound.com"
+          className="field"
+          autoComplete="username"
+        />
       </div>
 
       <div>
-        <label className="block text-xs font-mono uppercase tracking-wider text-neutral-300 mb-1.5">
-          Master Security Key / Password
+        <label className="field-label" htmlFor="admin-password">
+          Master security key
         </label>
         <div className="relative">
-          <Lock className="w-4 h-4 text-neutral-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
+            id="admin-password"
             type={showPassword ? 'text' : 'password'}
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="••••••••••••"
-            className="w-full pl-10 pr-11 py-3 rounded-xl bg-ink/80 border border-white/10 text-white placeholder-neutral-500 text-sm focus:outline-none focus:border-amber focus:ring-1 focus:ring-amber transition-all"
+            className="field pr-10"
+            autoComplete="current-password"
           />
           <button
             type="button"
             onClick={() => setShowPassword(!showPassword)}
-            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-white"
-            aria-label="Toggle password visibility"
+            className="absolute right-0 top-1/2 -translate-y-1/2 p-1.5 text-fg-muted hover:text-amber transition-colors"
+            aria-label={showPassword ? 'Hide password' : 'Show password'}
           >
             {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
           </button>
         </div>
       </div>
 
-      <button
-        type="submit"
-        disabled={loading}
-        className="w-full mt-2 py-3.5 rounded-xl bg-amber text-ink font-semibold text-xs uppercase tracking-widest hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-60"
-      >
+      <button type="submit" disabled={loading} className="btn-primary w-full">
         {loading ? (
           <>
-            <Loader2 className="w-4 h-4 animate-spin" />
-            <span>Verifying Session...</span>
+            <Loader2 className="w-4 h-4 animate-spin" aria-hidden />
+            <span>Verifying session</span>
           </>
         ) : (
           <>
-            <span>Sign In To Console</span>
-            <ArrowRight className="w-4 h-4" />
+            <span>Sign in to console</span>
+            <ArrowRight className="w-4 h-4" aria-hidden />
           </>
         )}
       </button>
@@ -116,39 +111,53 @@ function LoginForm() {
 
 export default function AdminLoginPage() {
   return (
-    <div className="min-h-[85vh] flex items-center justify-center px-4 sm:px-6 lg:px-8 py-12 relative overflow-hidden">
-      {/* Background ambient lighting */}
-      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[300px] bg-amber/10 rounded-full blur-[130px] pointer-events-none" />
+    <div className="min-h-screen bg-ink text-white">
+      <div className="container-page pt-28 lg:pt-36 pb-20 grid grid-cols-1 lg:grid-cols-12 gap-x-14 gap-y-12 max-w-5xl">
+        {/* Left: what this door is, plain text on a hairline */}
+        <div className="lg:col-span-5">
+          <div className="border-b border-white/[0.12] pb-4">
+            <span className="label label-amber">Staff only · internal dispatch</span>
+          </div>
+          <h1 className="font-heading text-h1 text-white mt-6">
+            Production console
+          </h1>
+          <p className="mt-4 text-body text-fg-muted leading-relaxed max-w-measure">
+            Booking queue, blackout calendar, portfolio and the rental catalog.
+            Access is limited to accounts on the operations team.
+          </p>
 
-      <div className="w-full max-w-md relative z-10">
-        <div className="glass-card-amber rounded-3xl p-8 sm:p-10 border border-amber/20 shadow-2xl relative">
-          {/* Header */}
-          <div className="text-center mb-8">
-            <div className="inline-flex w-12 h-12 rounded-2xl bg-amber/15 border border-amber/30 items-center justify-center text-amber mb-4 ">
-              <Volume2 className="w-6 h-6 stroke-[2.5]" />
-            </div>
-            <h1 className="font-heading text-2xl font-bold text-white tracking-tight">
-              Staff Operations Portal
-            </h1>
-            <p className="text-xs text-neutral-400 font-mono mt-1">
-              Eswari Sound System • Internal Dispatch & Rigging
-            </p>
+          <div className="mt-8 border-t border-white/[0.12] pt-5 space-y-2.5">
+            <p className="label">Encrypted 7-day session</p>
+            <p className="label">Eswari Sound System · Madurai depot</p>
+          </div>
+        </div>
+
+        {/* Right: underline form behind a vertical hairline */}
+        <div className="lg:col-span-7 lg:border-l lg:border-white/10 lg:pl-14">
+          <div className="border-b border-white/[0.12] pb-4">
+            <span className="label">Credentials</span>
           </div>
 
-          <Suspense
-            fallback={
-              <div className="py-12 flex justify-center items-center text-amber">
-                <Loader2 className="w-6 h-6 animate-spin" />
-              </div>
-            }
-          >
-            <LoginForm />
-          </Suspense>
-
-          <div className="mt-8 pt-6 border-t border-white/10 flex items-center justify-center gap-2 text-[11px] text-neutral-500 font-mono">
-            <ShieldCheck className="w-3.5 h-3.5 text-amber" />
-            <span>Encrypted 7-Day Session • Eswari Sound System</span>
+          <div className="pt-8 max-w-md">
+            <Suspense
+              fallback={
+                <div className="py-12 flex items-center gap-2 text-amber font-mono text-spec">
+                  <Loader2 className="w-4 h-4 animate-spin" aria-hidden />
+                  <span>Preparing sign-in…</span>
+                </div>
+              }
+            >
+              <LoginForm />
+            </Suspense>
           </div>
+
+          <p className="mt-10 pt-5 border-t border-white/[0.12] label">
+            Customer bookings live in the{' '}
+            <a href="/my-bookings" className="text-amber hover:underline">
+              order tracker
+            </a>
+            , not here.
+          </p>
         </div>
       </div>
     </div>

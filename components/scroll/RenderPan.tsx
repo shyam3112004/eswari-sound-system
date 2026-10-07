@@ -66,11 +66,12 @@ export function RenderPan({ items }: { items: PanItem[] }) {
 
   return (
     <section aria-label="Stage renders" className="bg-ink">
-      <header className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-10">
-        <h2 className="font-heading text-3xl sm:text-5xl font-extrabold text-white tracking-tight">
-          One Rig, Six Angles
+      <header className="container-page pt-24 lg:pt-32 pb-10">
+        <span className="label label-amber">Load-in to load-out</span>
+        <h2 className="font-heading text-h2 text-white mt-2">
+          One rig, six angles
         </h2>
-        <p className="mt-3 text-sm sm:text-base text-neutral-400 max-w-[65ch] leading-relaxed">
+        <p className="mt-3 text-small sm:text-body text-fg-muted max-w-measure leading-relaxed">
           Stage renders from our production playbook: the same crew, camera
           positions and load-in sequence we run on show day.
         </p>
@@ -94,7 +95,7 @@ export function RenderPan({ items }: { items: PanItem[] }) {
               key={item.src}
               className="shrink-0 w-[86vw] sm:w-[64vw] lg:w-[42vw] max-w-[760px] snap-start"
             >
-              <div className="relative aspect-[16/10] overflow-hidden rounded-card bg-ink-raised">
+              <div className="relative aspect-[16/10] overflow-hidden bg-ink-raised">
                 <img
                   src={item.src}
                   alt={item.alt}
@@ -104,9 +105,9 @@ export function RenderPan({ items }: { items: PanItem[] }) {
                   className="w-full h-full object-cover"
                 />
               </div>
-              <figcaption className="mt-3 flex items-baseline justify-between gap-4 font-mono text-[11px] uppercase tracking-widest text-neutral-400">
+              <figcaption className="mt-3 pt-3 hairline flex items-baseline justify-between gap-4 label">
                 <span>{item.caption}</span>
-                <span className="text-neutral-600">
+                <span className="text-fg-muted">
                   {String(i + 1).padStart(2, '0')} / {String(items.length).padStart(2, '0')}
                 </span>
               </figcaption>

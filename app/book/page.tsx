@@ -3,21 +3,7 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import {
-  Calendar as CalendarIcon,
-  CheckCircle2,
-  AlertCircle,
-  Volume2,
-  Clock,
-  ShieldCheck,
-  ArrowRight,
-  ArrowLeft,
-  Loader2,
-  MapPin,
-  Phone,
-  Mail,
-  User,
-} from 'lucide-react';
+import { ArrowRight, ArrowLeft, Loader2 } from 'lucide-react';
 import { formatINR } from '@/lib/utils';
 import MaterialsSelection from '@/components/ui/MaterialsSelection';
 
@@ -213,75 +199,68 @@ function BookingFlow() {
   if (bookingSuccess) {
     return (
       <div className="max-w-2xl mx-auto py-12 px-4 text-center space-y-6">
-        <div className="w-16 h-16 rounded-full bg-amber-950/80 border border-amber-500/40 text-amber flex items-center justify-center mx-auto shadow-xl shadow-amber-950/50">
-          <Phone className="w-8 h-8 animate-pulse" />
-        </div>
-
         <div className="space-y-2">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber/10 border border-amber/30 text-amber text-[11px] font-mono uppercase tracking-wider">
-            <span>Step 1 of 3: Booking Request Logged</span>
-          </div>
-          <h1 className="font-heading text-3xl sm:text-4xl font-extrabold text-white">
-            Booking Received! Next: Confirmation Call
+          <span className="label label-amber">Booking request logged</span>
+          <h1 className="font-heading text-h1 text-white mt-3">
+            Received. Next: the confirmation call.
           </h1>
-          <p className="text-xs sm:text-sm text-neutral-300 max-w-lg mx-auto">
-            Our team reviews every stage rig to verify electrical load and logistics before taking your deposit.
+          <p className="text-body text-fg-muted max-w-measure mx-auto leading-relaxed">
+            Every rig is checked for electrical load and access before we take a
+            deposit. That check is what the next call is about.
           </p>
         </div>
 
-        {/* Call Banner */}
-        <div className="p-4 sm:p-5 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-left flex items-start gap-4">
-          <div className="w-10 h-10 rounded-xl bg-amber text-ink flex items-center justify-center shrink-0 mt-0.5 font-bold">
-            <Phone className="w-5 h-5" />
-          </div>
-          <div className="space-y-1">
-            <h4 className="font-heading text-sm font-bold text-white">
-              We will call you at <span className="text-amber font-mono">{bookingSuccess.customerPhone}</span>
-            </h4>
-            <p className="text-xs text-neutral-300 leading-relaxed">
-              Our sound engineer will call you within 15–30 minutes to confirm venue power (single/3-phase), stage clearance, and arrival timing. Once confirmed, we will unlock your 25% advance payment to officially lock your date.
-            </p>
-          </div>
+        {/* Call note */}
+        <div className="text-left border-l-2 border-amber pl-5 py-4">
+          <p className="font-heading text-base font-bold text-white">
+            We call you at{' '}
+            <span className="text-amber font-mono">{bookingSuccess.customerPhone}</span>
+          </p>
+          <p className="mt-2 text-small text-fg-muted leading-relaxed max-w-measure">
+            Within 15–30 minutes we confirm venue power (single or 3-phase),
+            stage clearance and arrival timing. Once that is settled you unlock
+            the 25% advance and the date is locked on the calendar.
+          </p>
         </div>
 
-        <div className="glass-card-amber rounded-3xl p-6 sm:p-8 text-left space-y-4 border border-amber/30 text-xs">
-          <div className="flex justify-between border-b border-white/10 pb-3">
-            <span className="text-neutral-400 font-mono">Booking Ref ID:</span>
+        <div className="text-left">
+          <div className="hairline flex justify-between gap-4 py-3 text-small">
+            <span className="label">Booking ref</span>
             <span className="font-mono text-amber font-bold">{bookingSuccess.id}</span>
           </div>
-          <div className="flex justify-between border-b border-white/10 pb-3">
-            <span className="text-neutral-400 font-mono">Customer:</span>
+          <div className="hairline flex justify-between gap-4 py-3 text-small">
+            <span className="label">Customer</span>
             <span className="font-medium text-white">{bookingSuccess.customerName}</span>
           </div>
-          <div className="flex justify-between border-b border-white/10 pb-3">
-            <span className="text-neutral-400 font-mono">Event Date:</span>
+          <div className="hairline flex justify-between gap-4 py-3 text-small">
+            <span className="label">Event date</span>
             <span className="font-mono text-white">{bookingSuccess.eventDate}</span>
           </div>
-          <div className="flex justify-between border-b border-white/10 pb-3">
-            <span className="text-neutral-400 font-mono">Selected Rig:</span>
+          <div className="hairline flex justify-between gap-4 py-3 text-small">
+            <span className="label">Stage rig</span>
             <span className="font-medium text-amber">{bookingSuccess.packageName}</span>
           </div>
-          <div className="flex justify-between border-b border-white/10 pb-3">
-            <span className="text-neutral-400 font-mono">Total Rental Amount:</span>
+          <div className="hairline flex justify-between gap-4 py-3 text-small">
+            <span className="label">Total day rate</span>
             <span className="font-mono text-white font-bold">{formatINR(bookingSuccess.totalAmount)}</span>
           </div>
-          <div className="flex justify-between border-b border-white/10 pb-3 text-sm">
-            <span className="text-amber font-mono font-bold">25% Advance Required to Lock:</span>
+          <div className="hairline flex justify-between gap-4 py-3 text-small">
+            <span className="label label-amber">25% advance to lock</span>
             <span className="font-mono text-amber font-extrabold">{formatINR(bookingSuccess.advanceAmount)}</span>
           </div>
-          <div className="flex justify-between text-neutral-400 text-[11px]">
-            <span>Balance Due On-Site Post Sound-Check (75%):</span>
-            <span className="font-mono text-neutral-200">{formatINR(bookingSuccess.balanceAmount)}</span>
+          <div className="hairline flex justify-between gap-4 py-3 text-small">
+            <span className="label">Balance on site after sound-check</span>
+            <span className="font-mono text-fg-soft">{formatINR(bookingSuccess.balanceAmount)}</span>
           </div>
         </div>
 
         <div className="space-y-3 pt-2">
           <Link
             href={`/my-bookings?query=${encodeURIComponent(bookingSuccess.customerPhone)}`}
-            className="w-full py-4 rounded-full bg-amber text-ink font-bold text-xs uppercase tracking-widest flex items-center justify-center gap-2 hover:brightness-110 transition-all"
+            className="btn-primary w-full"
           >
             <span>Track Order in Customer Portal</span>
-            <ArrowRight className="w-4 h-4" />
+            <ArrowRight className="w-4 h-4" aria-hidden />
           </Link>
 
           <a
@@ -290,14 +269,14 @@ function BookingFlow() {
             )}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="w-full py-3.5 rounded-full glass-card hover:bg-emerald-950/40 text-emerald-400 border border-emerald-500/30 font-semibold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all"
+            className="link-arrow flex w-max mx-auto"
           >
             <span>Chat on WhatsApp with Dispatch</span>
           </a>
 
           <Link
             href="/"
-            className="block text-xs font-mono text-neutral-400 hover:text-white pt-2"
+            className="link-arrow flex w-max mx-auto !text-fg-muted"
           >
             ← Return to Homepage
           </Link>
@@ -315,26 +294,25 @@ function BookingFlow() {
   return (
     <div className="py-12 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto">
       {/* Header */}
-      <div className="text-center max-w-2xl mx-auto mb-12 space-y-3">
-        <span className="text-amber text-xs font-mono uppercase tracking-widest font-semibold">
-          Instant Production Booking
-        </span>
-        <h1 className="font-heading text-3xl sm:text-4xl font-extrabold text-white">
-          Reserve Your Concert Rig & Stage Crew
+      <div className="max-w-3xl">
+        <span className="label label-amber">Instant production booking</span>
+        <h1 className="font-heading text-h1 text-white mt-3">
+          Reserve the rig and the crew
         </h1>
-        <p className="text-xs sm:text-sm text-neutral-300">
-          3-step reservation with real-time calendar verification and 25% advance lock.
+        <p className="mt-4 text-body text-fg-muted leading-relaxed max-w-measure">
+          Four short steps: date, rig, extras, venue. The calendar is checked
+          live, and 25% advance locks the date the moment you pay.
         </p>
 
-        {/* Stepper Indicator */}
-        <div className="flex items-center justify-center gap-3 pt-4">
+        {/* Stepper — text tabs with an amber underline */}
+        <div className="mt-8 flex items-start gap-6 overflow-x-auto border-b border-white/[0.12] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {[
             { num: 1, label: 'Date Check' },
             { num: 2, label: 'Select Package' },
             { num: 3, label: 'Materials' },
             { num: 4, label: 'Venue Details' },
           ].map((s) => (
-            <div key={s.num} className="flex items-center gap-2">
+            <div key={s.num} className="shrink-0">
               <button
                 type="button"
                 onClick={() => {
@@ -342,80 +320,70 @@ function BookingFlow() {
                     setStep(s.num as any);
                   }
                 }}
-                className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-mono font-bold transition-all ${
-                  step === s.num
-                    ? 'bg-amber text-ink '
-                    : step > s.num
-                    ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
-                    : 'bg-white/10 text-neutral-400'
+                className={`tab ${step === s.num ? 'is-active' : ''} ${
+                  step > s.num ? '!text-fg-soft' : ''
                 }`}
               >
-                {step > s.num ? '✓' : s.num}
+                <span className={step === s.num ? 'text-amber' : ''}>
+                  {String(s.num).padStart(2, '0')}
+                </span>
+                <span className="ml-2">{s.label}</span>
               </button>
-              <span className="text-xs font-mono text-neutral-400 hidden sm:inline">
-                {s.label}
-              </span>
-              {s.num < 4 && <span className="text-neutral-600 hidden sm:inline">·</span>}
             </div>
           ))}
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-x-10 gap-y-12">
         {/* Main Step Form */}
         <div className="lg:col-span-2 space-y-6">
           {/* STEP 1: DATE VERIFICATION */}
           {step === 1 && (
-            <div className="glass-card rounded-3xl p-8 border border-white/10 space-y-6">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-amber/15 border border-amber/30 flex items-center justify-center text-amber">
-                  <CalendarIcon className="w-5 h-5" />
-                </div>
-                <div>
-                  <h2 className="font-heading text-xl font-bold text-white">
-                    Step 1: Check Event Date Availability
-                  </h2>
-                  <p className="text-xs text-neutral-400">
-                    We only power one major arena or multi-stage event per date to ensure 100% focus.
-                  </p>
-                </div>
+            <div className="hairline pt-6 pb-8 space-y-6">
+              <div>
+                <span className="label label-amber">Step 01</span>
+                <h2 className="font-heading text-h3 text-white mt-2">
+                  Check the event date
+                </h2>
+                <p className="mt-2 text-small text-fg-muted leading-relaxed max-w-measure">
+                  One major arena or multi-stage event per date. That is the
+                  entire schedule policy.
+                </p>
               </div>
 
-              <div className="space-y-4 pt-2">
-                <label className="block text-xs font-mono uppercase tracking-wider text-neutral-300">
-                  Select Desired Event Date
-                </label>
-                <div className="relative">
+              <div className="space-y-4 max-w-md">
+                <div>
+                  <label className="field-label" htmlFor="event-date">
+                    Select event date
+                  </label>
                   <input
+                    id="event-date"
                     type="date"
                     min={today}
                     max={maxDateStr}
                     value={selectedDate}
                     onChange={(e) => verifyDate(e.target.value)}
-                    className="w-full px-4 py-3.5 rounded-xl bg-ink/90 border border-white/15 text-white text-sm focus:outline-none focus:border-amber focus:ring-1 focus:ring-amber font-mono"
+                    className="field font-mono"
                   />
                 </div>
 
                 {checkingDate && (
-                  <div className="flex items-center gap-2 text-xs text-amber font-mono py-2">
-                    <Loader2 className="w-4 h-4 animate-spin" />
+                  <div className="flex items-center gap-2 text-spec text-amber font-mono py-2">
+                    <Loader2 className="w-4 h-4 animate-spin" aria-hidden />
                     <span>Verifying depot availability and blackout registry...</span>
                   </div>
                 )}
 
                 {dateAvailable === true && (
-                  <div className="p-4 rounded-2xl bg-emerald-950/60 border border-emerald-500/30 text-emerald-300 text-xs flex items-center justify-between">
-                    <div className="flex items-center gap-2.5">
-                      <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
-                      <div>
-                        <span className="font-bold block">Date is 100% Available!</span>
-                        Depot fleet and lead FOH crew are open on this date.
-                      </div>
-                    </div>
+                  <div className="alert alert-success flex flex-wrap items-center justify-between gap-4">
+                    <span className="text-emerald-300">
+                      <strong className="block font-semibold">Date is open</strong>
+                      Depot fleet and the lead FOH crew are free on this date.
+                    </span>
                     <button
                       type="button"
                       onClick={() => setStep(2)}
-                      className="px-4 py-2 rounded-xl bg-emerald-500 text-ink font-semibold text-xs uppercase tracking-wider hover:brightness-110 shrink-0 ml-3"
+                      className="btn-primary btn-primary-sm shrink-0"
                     >
                       Proceed
                     </button>
@@ -423,12 +391,12 @@ function BookingFlow() {
                 )}
 
                 {dateAvailable === false && (
-                  <div className="p-4 rounded-2xl bg-red-950/60 border border-red-500/30 text-red-300 text-xs flex items-start gap-2.5">
-                    <AlertCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
-                    <div>
-                      <span className="font-bold block">Date Unavailable</span>
-                      {dateError || 'This date is already reserved. Please pick another date or inquire for custom multi-rig deployment.'}
-                    </div>
+                  <div className="alert alert-error" role="alert">
+                    <strong className="block font-semibold text-red-200">
+                      Date unavailable
+                    </strong>
+                    {dateError ||
+                      'This date is already reserved. Pick another date, or send an inquiry for a multi-rig deployment.'}
                   </div>
                 )}
               </div>
@@ -437,28 +405,24 @@ function BookingFlow() {
 
           {/* STEP 2: PACKAGE SELECTION */}
           {step === 2 && (
-            <div className="glass-card rounded-3xl p-8 border border-white/10 space-y-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-2xl bg-amber/15 border border-amber/30 flex items-center justify-center text-amber">
-                    <Volume2 className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h2 className="font-heading text-xl font-bold text-white">
-                      Step 2: Choose Your Stage Rig
-                    </h2>
-                    <p className="text-xs text-neutral-400">
-                      Configured for selected date: <span className="text-amber font-mono">{selectedDate}</span>
-                    </p>
-                  </div>
+            <div className="hairline pt-6 pb-8 space-y-6">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <span className="label label-amber">Step 02</span>
+                  <h2 className="font-heading text-h3 text-white mt-2">
+                    Choose the stage rig
+                  </h2>
+                  <p className="mt-2 text-small text-fg-muted font-mono">
+                    Configured for {selectedDate}
+                  </p>
                 </div>
 
                 <button
                   type="button"
                   onClick={() => setStep(1)}
-                  className="text-xs font-mono text-neutral-400 hover:text-white"
+                  className="link-arrow !text-fg-muted shrink-0"
                 >
-                  Change Date
+                  <span>Change date</span>
                 </button>
               </div>
 
@@ -470,65 +434,62 @@ function BookingFlow() {
                   return (
                     <div
                       key={pkg.id}
+                      role="radio"
+                      aria-checked={isSelected}
+                      tabIndex={0}
                       onClick={() => setSelectedPackageSlug(pkg.slug)}
-                      className={`p-5 rounded-2xl border cursor-pointer transition-all ${
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          setSelectedPackageSlug(pkg.slug);
+                        }
+                      }}
+                      className={`hairline py-5 pl-4 -ml-4 border-l-2 cursor-pointer transition-colors focus:outline-none focus-visible:border-l-amber ${
                         isSelected
-                          ? isPkgCustom
-                            ? 'glass-card-amber border-haze shadow-lg shadow-haze/15'
-                            : 'glass-card-amber border-amber '
-                          : 'bg-white/5 border-white/10 hover:border-white/20'
+                          ? 'border-l-amber'
+                          : 'border-l-transparent hover:border-l-white/30'
                       }`}
                     >
                       <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                          <span
-                            className={`w-4 h-4 rounded-full border flex items-center justify-center ${
-                              isSelected
-                                ? isPkgCustom
-                                  ? 'border-haze bg-haze'
-                                  : 'border-amber bg-amber'
-                                : 'border-neutral-500'
-                            }`}
-                          >
-                            {isSelected && <span className="w-1.5 h-1.5 rounded-full bg-ink" />}
-                          </span>
-                          <span className="font-heading text-base font-bold text-white flex items-center gap-2">
+                        <div className="flex items-baseline gap-3 flex-wrap">
+                          <span className="font-heading text-h4 text-white flex items-center gap-2">
                             <span>{pkg.name}</span>
                             {isPkgCustom && (
-                              <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded-full bg-haze/20 border border-haze/40 text-haze font-bold">
-                                Build Your Own
-                              </span>
+                              <span className="label label-amber">Build your own</span>
                             )}
                           </span>
                         </div>
-                        <span className={`font-heading text-base font-bold ${isPkgCustom ? 'text-haze' : 'text-amber'}`}>
+                        <span
+                          className={`font-heading text-lg font-bold ${
+                            isSelected ? 'text-amber' : 'text-fg-soft'
+                          }`}
+                        >
                           {isPkgCustom ? 'Dynamic (₹0 Base)' : formatINR(pkg.price)}
                         </span>
                       </div>
 
-                      <p className="text-xs text-neutral-400 pl-6 leading-relaxed mb-3">
+                      <p className="text-small text-fg-muted leading-relaxed max-w-measure mb-3">
                         {pkg.description}
                       </p>
 
-                      <div className="pl-6 text-[11px] text-neutral-400 font-mono flex items-center gap-4">
+                      <div className="text-spec text-fg-muted font-mono flex flex-wrap items-center gap-x-4 gap-y-1">
                         {isPkgCustom ? (
                           <>
-                            <span>Advance: <strong className="text-haze">25% of Materials Total</strong></span>
+                            <span>Advance: <strong className="text-white">25% of materials total</strong></span>
                             <span>•</span>
-                            <span>Balance: <strong className="text-neutral-300">75% on-site</strong></span>
+                            <span>Balance: <strong className="text-fg-soft">75% on site</strong></span>
                           </>
                         ) : (
                           <>
                             <span>Advance: <strong className="text-white">{formatINR(pkg.price * 0.25)}</strong></span>
                             <span>•</span>
-                            <span>Balance: <strong className="text-neutral-300">{formatINR(pkg.price * 0.75)}</strong></span>
+                            <span>Balance: <strong className="text-fg-soft">{formatINR(pkg.price * 0.75)}</strong></span>
                           </>
                         )}
                       </div>
 
                       {isSelected && isPkgCustom && (
-                        <div className="mt-3 ml-6 p-2.5 rounded-xl bg-haze/10 border border-haze/30 text-xs text-haze font-mono flex items-center gap-2">
-                          <AlertCircle className="w-3.5 h-3.5 shrink-0" aria-hidden />
+                        <div className="mt-3 alert">
                           <span>Custom Rig selected. In the next step, select the exact equipment and quantities needed.</span>
                         </div>
                       )}
@@ -540,19 +501,19 @@ function BookingFlow() {
                   <button
                     type="button"
                     onClick={() => setStep(1)}
-                    className="inline-flex items-center gap-1.5 text-xs font-mono text-neutral-400 hover:text-white"
+                    className="link-arrow !text-fg-muted"
                   >
-                    <ArrowLeft className="w-3.5 h-3.5" />
-                    <span>Back to Date</span>
+                    <ArrowLeft className="w-3.5 h-3.5" aria-hidden />
+                    <span>Back to date</span>
                   </button>
 
                   <button
                     type="button"
                     onClick={() => setStep(3)}
-                    className="px-6 py-3 rounded-full bg-amber text-ink font-semibold text-xs uppercase tracking-wider hover:brightness-110 flex items-center gap-2 "
+                    className="btn-primary"
                   >
                     <span>{isCustomRig ? 'Choose Custom Materials' : 'Continue to Materials'}</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
+                    <ArrowRight className="w-3.5 h-3.5" aria-hidden />
                   </button>
                 </div>
               </div>
@@ -572,90 +533,89 @@ function BookingFlow() {
 
           {/* STEP 4: CLIENT & VENUE DETAILS */}
           {step === 4 && (
-            <div className="glass-card rounded-3xl p-8 border border-white/10 space-y-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-2xl bg-amber/15 border border-amber/30 flex items-center justify-center text-amber">
-                    <User className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h2 className="font-heading text-xl font-bold text-white">
-                      Step 3: Client & Venue Details
-                    </h2>
-                    <p className="text-xs text-neutral-400">
-                      Enter contact info for dispatch team and invoice generation.
-                    </p>
-                  </div>
+            <div className="hairline pt-6 pb-8 space-y-6">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <span className="label label-amber">Step 04</span>
+                  <h2 className="font-heading text-h3 text-white mt-2">
+                    Client &amp; venue details
+                  </h2>
+                  <p className="mt-2 text-small text-fg-muted max-w-measure">
+                    What dispatch and the invoice need before we load the truck.
+                  </p>
                 </div>
 
                 <button
                   type="button"
                   onClick={() => setStep(3)}
-                  className="text-xs font-mono text-neutral-400 hover:text-white"
+                  className="link-arrow !text-fg-muted shrink-0"
                 >
-                  Change Materials
+                  <span>Change materials</span>
                 </button>
               </div>
 
               {bookingError && (
-                <div className="p-4 rounded-2xl bg-red-950/60 border border-red-500/30 text-red-300 text-xs flex items-center gap-2">
-                  <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />
-                  <span>{bookingError}</span>
+                <div className="alert alert-error text-red-200" role="alert">
+                  {bookingError}
                 </div>
               )}
 
-              <form onSubmit={handleBookingSubmit} className="space-y-4 text-xs">
+              <form onSubmit={handleBookingSubmit} className="space-y-7">
                 <div>
-                  <label className="block font-mono uppercase tracking-wider text-neutral-300 mb-1">
+                  <label className="field-label" htmlFor="bk-name">
                     Full Name / Organization Head
                   </label>
                   <input
+                    id="bk-name"
                     type="text"
                     required
                     value={formData.customerName}
                     onChange={(e) => setFormData({ ...formData, customerName: e.target.value })}
                     placeholder="e.g. Senthil Nathan"
-                    className="w-full px-4 py-3 rounded-xl bg-ink/80 border border-white/15 text-white placeholder-neutral-500 focus:outline-none focus:border-amber focus:ring-1 focus:ring-amber"
+                    className="field"
                   />
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-7">
                   <div>
-                    <label className="block font-mono uppercase tracking-wider text-neutral-300 mb-1">
+                    <label className="field-label" htmlFor="bk-phone">
                       10-Digit Mobile Number
                     </label>
                     <input
+                      id="bk-phone"
                       type="tel"
                       required
                       value={formData.customerPhone}
                       onChange={(e) => setFormData({ ...formData, customerPhone: e.target.value })}
                       placeholder="9876543210"
-                      className="w-full px-4 py-3 rounded-xl bg-ink/80 border border-white/15 text-white placeholder-neutral-500 focus:outline-none focus:border-amber focus:ring-1 focus:ring-amber font-mono"
+                      className="field font-mono"
                     />
                   </div>
                   <div>
-                    <label className="block font-mono uppercase tracking-wider text-neutral-300 mb-1">
+                    <label className="field-label" htmlFor="bk-email">
                       Email Address (For Invoices)
                     </label>
                     <input
+                      id="bk-email"
                       type="email"
                       required
                       value={formData.customerEmail}
                       onChange={(e) => setFormData({ ...formData, customerEmail: e.target.value })}
                       placeholder="senthil@example.com"
-                      className="w-full px-4 py-3 rounded-xl bg-ink/80 border border-white/15 text-white placeholder-neutral-500 focus:outline-none focus:border-amber focus:ring-1 focus:ring-amber"
+                      className="field"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block font-mono uppercase tracking-wider text-neutral-300 mb-1">
+                  <label className="field-label" htmlFor="bk-type">
                     Event Type
                   </label>
                   <select
+                    id="bk-type"
                     value={formData.eventType}
                     onChange={(e) => setFormData({ ...formData, eventType: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl bg-ink/80 border border-white/15 text-white focus:outline-none focus:border-amber focus:ring-1 focus:ring-amber"
+                    className="field bg-ink"
                   >
                     <option value="Wedding Reception">Wedding Reception / Muhurtham</option>
                     <option value="Concert / Live Music">Concert / Live Music Performance</option>
@@ -666,56 +626,58 @@ function BookingFlow() {
                 </div>
 
                 <div>
-                  <label className="block font-mono uppercase tracking-wider text-neutral-300 mb-1">
+                  <label className="field-label" htmlFor="bk-venue">
                     Full Venue Address & Landmark
                   </label>
                   <textarea
+                    id="bk-venue"
                     rows={2}
                     required
                     value={formData.venueAddress}
                     onChange={(e) => setFormData({ ...formData, venueAddress: e.target.value })}
                     placeholder="Mandapam / Hall name, street, locality, city (e.g. Chennai, Madurai)..."
-                    className="w-full px-4 py-3 rounded-xl bg-ink/80 border border-white/15 text-white placeholder-neutral-500 focus:outline-none focus:border-amber focus:ring-1 focus:ring-amber resize-none"
+                    className="field resize-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block font-mono uppercase tracking-wider text-neutral-300 mb-1">
+                  <label className="field-label" htmlFor="bk-notes">
                     Special Rigging or Acoustic Notes (Optional)
                   </label>
                   <input
+                    id="bk-notes"
                     type="text"
                     value={formData.notes}
                     onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                     placeholder="e.g. Stage power supply available, sound check by 4 PM..."
-                    className="w-full px-4 py-3 rounded-xl bg-ink/80 border border-white/15 text-white placeholder-neutral-500 focus:outline-none focus:border-amber focus:ring-1 focus:ring-amber"
+                    className="field"
                   />
                 </div>
 
-                <div className="flex justify-between items-center pt-4">
+                <div className="hairline pt-6 flex flex-wrap justify-between items-center gap-4">
                   <button
                     type="button"
                     onClick={() => setStep(3)}
-                    className="inline-flex items-center gap-1.5 text-xs font-mono text-neutral-400 hover:text-white"
+                    className="link-arrow !text-fg-muted"
                   >
-                    <ArrowLeft className="w-3.5 h-3.5" />
+                    <ArrowLeft className="w-3.5 h-3.5" aria-hidden />
                     <span>Back to Materials</span>
                   </button>
 
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="px-8 py-4 rounded-full bg-amber text-ink font-bold text-xs uppercase tracking-widest hover:brightness-110 active:scale-95 transition-all disabled:opacity-60 flex items-center gap-2"
+                    className="btn-primary disabled:opacity-60"
                   >
                     {submitting ? (
                       <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <Loader2 className="w-4 h-4 animate-spin" aria-hidden />
                         <span>Registering Booking...</span>
                       </>
                     ) : (
                       <>
                         <span>Submit & Confirm 25% Advance</span>
-                        <ArrowRight className="w-4 h-4" />
+                        <ArrowRight className="w-4 h-4" aria-hidden />
                       </>
                     )}
                   </button>
@@ -725,87 +687,91 @@ function BookingFlow() {
           )}
         </div>
 
-        {/* Live Order Summary Sidebar */}
-        <div className="space-y-6">
-          <div className="glass-card-amber rounded-3xl p-6 sm:p-8 border border-amber/30 space-y-5">
-            <h3 className="font-heading text-lg font-bold text-white flex items-center justify-between">
-              <span>Production Order Summary</span>
-              <span className="text-[10px] font-mono uppercase text-amber">Single Provider</span>
-            </h3>
+        {/* Live order summary — sticky column behind a vertical hairline */}
+        <aside className="lg:border-l lg:border-white/10 lg:pl-8">
+          <div className="lg:sticky lg:top-28">
+            <div className="hairline pt-4 flex items-baseline justify-between gap-3">
+              <h3 className="font-heading text-h4 text-white">Production order</h3>
+              <span className="label label-amber !text-[9px]">Single provider</span>
+            </div>
 
-            <div className="space-y-3.5 text-xs border-y border-white/10 py-4">
-              <div className="flex justify-between">
-                <span className="text-neutral-400 font-mono">Date:</span>
-                <span className="text-white font-mono font-medium">
+            <div className="text-small">
+              <div className="hairline flex justify-between gap-4 py-3">
+                <span className="label">Date</span>
+                <span className="text-fg-soft font-mono text-right">
                   {selectedDate ? new Date(selectedDate).toDateString() : 'Not Selected'}
                 </span>
               </div>
 
-              <div className="flex justify-between">
-                <span className="text-neutral-400 font-mono">Rig Setup:</span>
-                <span className="text-white font-medium text-right max-w-[180px]">
+              <div className="hairline flex justify-between gap-4 py-3">
+                <span className="label shrink-0">Rig setup</span>
+                <span className="text-fg-soft text-right">
                   {selectedPackage?.name || 'Premium DJ Package'}
                 </span>
               </div>
 
-              <div className="flex justify-between">
-                <span className="text-neutral-400 font-mono">Package Rate:</span>
-                <span className="text-white font-mono">
+              <div className="hairline flex justify-between gap-4 py-3">
+                <span className="label">Package rate</span>
+                <span className="text-fg-soft font-mono tabular-nums">
                   {isCustomRig ? '₹0 (Custom Rig Base)' : formatINR(packageAmount)}
                 </span>
               </div>
 
               {selectedMaterials.length > 0 ? (
                 <>
-                  <div className="flex justify-between">
-                    <span className="text-neutral-400 font-mono">Materials ({selectedMaterials.length}):</span>
-                    <span className="text-haze font-mono">{formatINR(materialsAmount)}</span>
+                  <div className="hairline flex justify-between gap-4 py-3">
+                    <span className="label">Materials ({selectedMaterials.length})</span>
+                    <span className="text-fg-soft font-mono tabular-nums">
+                      {formatINR(materialsAmount)}
+                    </span>
                   </div>
-                  <div className="pl-4 space-y-1 text-[11px] max-h-36 overflow-y-auto">
+                  <div className="pl-4 max-h-36 overflow-y-auto">
                     {selectedMaterials.map((sm) => (
-                      <div key={sm.material.id} className="flex justify-between text-neutral-400">
+                      <div
+                        key={sm.material.id}
+                        className="flex justify-between gap-3 py-1 text-spec text-fg-muted"
+                      >
                         <span>{sm.material.name} × {sm.quantity}</span>
-                        <span className="text-neutral-300 font-mono">{formatINR(sm.material.pricePerDay * sm.quantity)}</span>
+                        <span className="font-mono">{formatINR(sm.material.pricePerDay * sm.quantity)}</span>
                       </div>
                     ))}
                   </div>
                 </>
               ) : isCustomRig ? (
-                <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber text-[11px] font-mono flex items-start gap-2">
-                  <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-px" aria-hidden />
+                <div className="hairline py-3 text-spec text-amber font-mono">
                   <span>No materials chosen yet. Please pick gear in Step 3.</span>
                 </div>
               ) : null}
 
-              <div className="flex justify-between pt-2 border-t border-white/5">
-                <span className="text-neutral-400 font-mono font-bold">Total Day Rate:</span>
-                <span className="text-white font-mono font-bold">{formatINR(totalAmount)}</span>
+              <div className="hairline flex justify-between items-baseline gap-4 py-4">
+                <span className="label">Total day rate</span>
+                <span className="font-heading text-2xl font-black text-fg tabular-nums">
+                  {formatINR(totalAmount)}
+                </span>
               </div>
             </div>
 
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="font-bold text-amber">Advance Due Now (25%):</span>
-                <span className="font-mono font-extrabold text-amber">{formatINR(advanceAmount)}</span>
+            <div className="hairline pt-4 space-y-2">
+              <div className="flex justify-between items-baseline gap-4">
+                <span className="label label-amber">Advance due now (25%)</span>
+                <span className="font-mono font-bold text-amber tabular-nums">
+                  {formatINR(advanceAmount)}
+                </span>
               </div>
-              <div className="flex justify-between text-[11px] text-neutral-400">
-                <span>Balance On-Site (75%):</span>
-                <span className="font-mono text-neutral-200">{formatINR(balanceAmount)}</span>
+              <div className="flex justify-between items-baseline gap-4">
+                <span className="label">Balance on site (75%)</span>
+                <span className="font-mono text-fg-soft tabular-nums">
+                  {formatINR(balanceAmount)}
+                </span>
               </div>
             </div>
 
-            <div className="pt-3 border-t border-white/10 space-y-2 text-[11px] text-neutral-400 font-mono">
-              <div className="flex items-center gap-1.5 text-emerald-400">
-                <ShieldCheck className="w-3.5 h-3.5" />
-                <span>Zero Brokerage Guarantee</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <Clock className="w-3.5 h-3.5 text-amber" />
-                <span>Sound Check Included (3 Hrs Prior)</span>
-              </div>
+            <div className="hairline mt-5 pt-4 space-y-2 label !tracking-[0.1em]">
+              <p>Zero brokerage · crew is on our payroll</p>
+              <p>Sound-check included, 3 hours before doors</p>
             </div>
           </div>
-        </div>
+        </aside>
       </div>
     </div>
   );

@@ -22,7 +22,11 @@ async function runTests() {
     const resHome = await fetch(`${BASE_URL}/`);
     assert(resHome.status === 200, 'Homepage returns 200 OK');
     const html = await resHome.text();
-    assert(html.includes('Pure Acoustic Power'), 'Contains display headline');
+    // Display headline updated by the scroll-cinematic redesign pass.
+    assert(
+      html.includes('run by the people who own them'),
+      'Contains display headline'
+    );
     assert(html.includes('Eswari Sound System'), 'Contains brand title');
 
     // 2. Test Desktop Frame Sequences for all 6 sections

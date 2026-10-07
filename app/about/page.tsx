@@ -1,17 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import {
-  Volume2,
-  ShieldCheck,
-  Zap,
-  Layers,
-  Award,
-  Users,
-  Radio,
-  Clock,
-  ArrowRight,
-  Sparkles,
-} from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 
 export const metadata = {
   title: 'Engineering Legacy & Production Rigs | Eswari Sound System',
@@ -19,176 +8,212 @@ export const metadata = {
     'Since 1998, Eswari Sound System has engineered concert-grade sound and lighting for 1,200+ stages across South India. Zero brokers, 100% in-house line arrays.',
 };
 
+const PILLARS = [
+  {
+    number: '01',
+    title: 'Matte-black line array stacks',
+    desc: 'High-SPL line-array enclosures with neodymium compression drivers, active DSP tuning and cardioid subs — vocals stay intelligible at the back fence of a 100-metre field.',
+    specs: '136 dB peak SPL • 110° horizontal dispersion • dual 18" subs',
+  },
+  {
+    number: '02',
+    title: 'Stage truss & intelligent lighting',
+    desc: 'Certified triangular and square truss loaded with 3200K tungsten PAR cans, moving-head beams and hazers, driven over DMX-512 by our own operator.',
+    specs: 'DMX-512 protocol • certified clamps • 3200K warm key wash',
+  },
+  {
+    number: '03',
+    title: 'Modular dark walnut stage decks',
+    desc: 'Custom 8×16 ft modular decking with non-slip walnut phenolic surface, heavy-gauge steel legs and flame-retardant matte black acoustic wrap.',
+    specs: '750 kg/m² safe working load • anti-vibration dampers • modular sizing',
+  },
+  {
+    number: '04',
+    title: 'Direct ownership seal',
+    desc: 'Mounted on every line-array tower and distribution rack. It marks in-house custody of the equipment, certified electrical grounding and no broker in the chain.',
+    specs: 'Direct provider seal • dual surge suppression • isolated earth ground',
+  },
+];
+
+const MILESTONES = [
+  {
+    year: '1998',
+    title: 'Depot founded',
+    desc: 'High-power analog horn systems for temple festivals and cultural mandapams in Madurai.',
+  },
+  {
+    year: '2008',
+    title: 'Line arrays',
+    desc: 'First in the region to fly modern curve line-array audio for outdoor rallies and weddings.',
+  },
+  {
+    year: '2016',
+    title: 'DMX lighting',
+    desc: 'Moving heads, digital stage boxes and hazers integrated into unified audio-lighting rigs.',
+  },
+  {
+    year: 'Present',
+    title: '1,200+ live stages',
+    desc: 'Logistics hubs in Chennai and Madurai, powering touring acts and college festivals.',
+  },
+];
+
+const GUARANTEES = [
+  '100% owned warehouse inventory — no sub-renting',
+  'Sound-check three hours before doors, every show',
+  'Dual generator isolated clean power distribution',
+  'Real-time RF scanning on every wireless channel',
+];
+
 export default function AboutPage() {
-  const anchors = [
-    {
-      number: '01',
-      title: 'Matte-Black Line Array Stacks',
-      desc: 'High-SPL line-array enclosures featuring neodymium compression drivers, active DSP acoustic tuning, and cardioid subwoofer deployment to project pristine vocal clarity 100+ meters without stage bleed.',
-      specs: '136 dB Peak SPL • 110° Horizontal Dispersion • Dual 18" Subwoofers',
-    },
-    {
-      number: '02',
-      title: 'Stage Truss & Intelligent Lighting',
-      desc: 'Certified heavy-duty triangular and square black box truss loaded with 3200K warm tungsten PAR cans, high-speed moving head beam fixtures, and haze generators synchronized to live performance tempos.',
-      specs: 'DMX-512 Protocol • Doughty Certified Clamps • 3200K Warm Key Wash',
-    },
-    {
-      number: '03',
-      title: 'Modular Dark Walnut Stage Decks',
-      desc: 'Custom-engineered 8x16 ft modular stage decking with non-slip dark walnut phenolic surface, heavy-gauge steel leg supports, and flame-retardant matte black acoustic wrap.',
-      specs: '750 kg/m² Safe Working Load • Anti-Vibration Leg Dampers • Modular Sizing',
-    },
-    {
-      number: '04',
-      title: 'Signature Direct Ownership Seal',
-      desc: 'Mounted on each primary line-array tower and main distribution rack. It signifies direct in-house equipment custody, certified electrical grounding, and zero broker intervention.',
-      specs: 'Verified Direct Provider Seal • Dual Surge Suppression • Isolated Earth Ground',
-    },
-  ];
-
-  const milestones = [
-    { year: '1998', title: 'Depot Founded', desc: 'Started with high-power analog horn systems for temple festivals and cultural mandapams in Madurai.' },
-    { year: '2008', title: 'Transition to Line Arrays', desc: 'First provider in the region to deploy modern curve line-array audio for large-scale outdoor political rallies and weddings.' },
-    { year: '2016', title: 'DMX Lighting Integration', desc: 'Integrated synchronized moving head beams, digital stage boxes, and hazers into unified audio-lighting combos.' },
-    { year: 'Present', title: '1,200+ Live Stages', desc: 'Operating full-scale logistics hubs in Chennai and Madurai, powering top South Indian touring acts and college festivals.' },
-  ];
-
   return (
-    <div className="min-h-screen bg-ink text-white py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-      {/* Hero (No Box UI) */}
-      <div className="max-w-4xl mx-auto text-center space-y-4 mb-24">
-        <div className="flex items-center justify-center gap-2 text-amber text-xs font-mono uppercase tracking-[0.25em]">
-          <Radio className="w-3.5 h-3.5 text-amber animate-pulse" />
-          <span>ESTABLISHED 1998 • TAMIL NADU EVENT PRODUCTION</span>
-        </div>
-
-        <h1 className="font-heading text-4xl sm:text-6xl lg:text-7xl font-black text-white tracking-tight leading-[1.08]">
-          Sound Engineered By <br />
-          <span className="text-gradient-amber">Engineers, Never Brokers</span>
-        </h1>
-
-        <p className="text-base sm:text-lg text-neutral-300 leading-relaxed max-w-2xl mx-auto pt-2">
-          In an industry flooded with event middlemen renting random gear off WhatsApp groups, Eswari Sound System stands as an uncompromising direct provider.
-        </p>
-      </div>
-
-      {/* The Single Provider Manifesto (Clean Linear Typography, No Box UI) */}
-      <div className="border-t border-b border-white/10 py-16 mb-28">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
-          <div className="lg:col-span-7 space-y-5">
-            <span className="text-amber text-xs font-mono uppercase tracking-[0.25em]">
-              // THE DIRECT PROVIDER RULE
+    <div className="min-h-screen bg-ink text-white">
+      {/* Header — left statement, right meta column */}
+      <div className="container-page pt-24 lg:pt-32 pb-10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-x-14 gap-y-8 items-end">
+          <div className="lg:col-span-8">
+            <span className="label label-amber">
+              Established 1998 · Tamil Nadu event production
             </span>
-            <h2 className="font-heading text-3xl sm:text-4xl font-extrabold text-white">
-              Why We Refuse To Sub-Contract Our Rigs
+            <h1 className="font-heading text-h1 text-white mt-4">
+              Sound engineered by engineers, never brokers
+            </h1>
+            <p className="mt-5 text-body text-fg-muted leading-relaxed max-w-measure">
+              Every rig we send out is ours — bought, maintained and flown by our
+ own crew. When an aggregator is hired, up to 40% of the budget disappears
+              into middleman markup before a single speaker leaves the warehouse.
+              We simply never work that way.
+            </p>
+          </div>
+
+          <div className="lg:col-span-4 lg:border-l lg:border-white/10 lg:pl-10">
+            <div className="border-t border-white/[0.12] pt-4 flex justify-between gap-4 text-spec font-mono">
+              <span className="label">Operating since</span>
+              <span className="text-amber">1998</span>
+            </div>
+            <div className="border-t border-white/[0.12] pt-4 mt-4 flex justify-between gap-4 text-spec font-mono">
+              <span className="label">Stages built</span>
+              <span className="text-amber">1,200+</span>
+            </div>
+            <div className="border-t border-white/[0.12] pt-4 mt-4 flex justify-between gap-4 text-spec font-mono">
+              <span className="label">Depots</span>
+              <span className="text-fg-soft">Madurai · Chennai</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* The direct provider rule */}
+      <div className="border-t border-white/[0.12]">
+        <div className="container-page section-tight grid grid-cols-1 lg:grid-cols-12 gap-x-14 gap-y-10">
+          <div className="lg:col-span-7">
+            <span className="label label-amber">The direct provider rule</span>
+            <h2 className="font-heading text-h2 text-white mt-3">
+              Why we refuse to sub-contract our rigs
             </h2>
-            <p className="text-sm text-neutral-300 leading-relaxed">
-              When an event planner hires an aggregator or vendor broker, up to 40% of the budget disappears into middleman markup. The broker then negotiates with low-bid technicians who bring worn cables, mismatched speakers, and blown tweeters.
+            <p className="mt-5 text-body text-fg-muted leading-relaxed max-w-measure">
+              Brokers negotiate with whoever answers first — usually low-bid
+              technicians carrying worn cables, mismatched speakers and blown
+              tweeters. The markup is invisible until the show sounds like it.
             </p>
-            <p className="text-sm text-neutral-300 leading-relaxed">
-              At Eswari Sound System, when you book a stage rig, our own fleet transports the gear, our own technicians fly the truss, and our senior FOH engineer personally balances the acoustic frequencies. Zero surprises. Pure acoustic clarity.
+            <p className="mt-4 text-body text-fg-muted leading-relaxed max-w-measure">
+              When you book a stage rig from us, our own fleet transports the
+              gear, our own technicians fly the truss, and the senior FOH
+              engineer who priced your show stands behind the desk on show
+ night. Zero surprises, pure acoustic clarity.
             </p>
           </div>
 
-          <div className="lg:col-span-5 border-l-2 border-amber/60 pl-6 space-y-4">
-            <div className="text-amber font-mono text-xs font-bold uppercase tracking-widest">
-              Direct Provider Guarantees:
-            </div>
-            <div className="space-y-3 text-sm">
-              <div className="flex items-start gap-2.5 text-white">
-                <span className="text-amber font-bold">✓</span>
-                <span>100% Owned Warehouse Inventory (No Sub-renting)</span>
-              </div>
-              <div className="flex items-start gap-2.5 text-white">
-                <span className="text-amber font-bold">✓</span>
-                <span>Dedicated Sound Check 3 Hours Prior to Event</span>
-              </div>
-              <div className="flex items-start gap-2.5 text-white">
-                <span className="text-amber font-bold">✓</span>
-                <span>Dual Generator Isolated Clean Power Distribution</span>
-              </div>
-              <div className="flex items-start gap-2.5 text-white">
-                <span className="text-amber font-bold">✓</span>
-                <span>Real-Time RF Wireless Microphone Frequency Scanning</span>
-              </div>
-            </div>
+          <div className="lg:col-span-5 border-l-2 border-amber pl-6">
+            <span className="label label-amber">Direct provider guarantees</span>
+            <ul className="mt-5 space-y-3.5">
+              {GUARANTEES.map((g) => (
+                <li key={g} className="marker-dot text-small text-fg-soft">
+                  {g}
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
       </div>
 
-      {/* The 4 Production Pillars (Open Layout, No Box UI) */}
-      <div className="mb-28">
-        <div className="max-w-2xl mb-14">
-          <span className="text-amber text-xs font-mono uppercase tracking-[0.25em]">
-            // PRODUCTION DNA
-          </span>
-          <h2 className="font-heading text-3xl sm:text-5xl font-extrabold text-white mt-1">
-            The Four Canonical Rig Pillars
-          </h2>
-          <p className="text-xs sm:text-sm text-neutral-300 mt-2 leading-relaxed">
-            Every Eswari stage setup is engineered around these four permanent physical pillars.
-          </p>
-        </div>
+      {/* Four pillars — outlined numerals on hairlines */}
+      <div className="border-t border-white/[0.12]">
+        <div className="container-page section-tight">
+          <div className="max-w-2xl">
+            <span className="label label-amber">Production DNA</span>
+            <h2 className="font-heading text-h2 text-white mt-3">
+              The four canonical rig pillars
+            </h2>
+            <p className="mt-4 text-body text-fg-muted leading-relaxed max-w-measure">
+              Every stage setup we build starts from these four permanent
+              physical pillars.
+            </p>
+          </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-12">
-          {anchors.map((a, i) => (
-            <div key={i} className="border-t border-white/15 pt-5 space-y-3">
-              <div className="flex items-baseline gap-3">
-                <span className="text-amber font-mono text-sm font-bold tracking-wider">
-                  {a.number}
-                </span>
-                <h3 className="font-heading text-xl font-bold text-white">{a.title}</h3>
-              </div>
-              <p className="text-xs sm:text-sm text-neutral-300 leading-relaxed">{a.desc}</p>
-              <div className="text-xs font-mono text-amber pt-1">
-                {a.specs}
-              </div>
-            </div>
-          ))}
+          <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-x-14">
+            {PILLARS.map((p) => (
+              <article key={p.number} className="hairline py-8">
+                <div className="flex items-baseline gap-5">
+                  <span className="numeral text-h3">{p.number}</span>
+                  <h3 className="font-heading text-h4 text-white">{p.title}</h3>
+                </div>
+                <p className="mt-4 text-small text-fg-muted leading-relaxed max-w-measure">
+                  {p.desc}
+                </p>
+                <p className="mt-4 label label-amber !tracking-[0.1em]">
+                  {p.specs}
+                </p>
+              </article>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* Historical Milestones (Clean Timeline, No Box UI) */}
-      <div className="mb-28 border-t border-white/10 pt-16">
-        <div className="max-w-2xl mb-12">
-          <span className="text-amber text-xs font-mono uppercase tracking-[0.25em]">
-            // 25 YEARS OF ACOUSTIC MASTERY
-          </span>
-          <h2 className="font-heading text-3xl sm:text-4xl font-extrabold text-white mt-1">
-            Our Journey In Sound
-          </h2>
-        </div>
+      {/* Milestones — timeline on hairlines */}
+      <div className="border-t border-white/[0.12]">
+        <div className="container-page section-tight">
+          <div className="max-w-2xl">
+            <span className="label label-amber">25 years in sound</span>
+            <h2 className="font-heading text-h2 text-white mt-3">Our journey</h2>
+          </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          {milestones.map((m, i) => (
-            <div key={i} className="border-t-2 border-amber/60 pt-4">
-              <div className="font-heading text-4xl font-black text-amber mb-2">
-                {m.year}
+          <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8">
+            {MILESTONES.map((m) => (
+              <div key={m.year} className="border-t border-amber/50 pt-5 pb-8">
+                <div className="font-heading text-h2 font-black text-amber tabular-nums">
+                  {m.year}
+                </div>
+                <h4 className="mt-3 font-heading text-base font-bold text-white">
+                  {m.title}
+                </h4>
+                <p className="mt-2 text-small text-fg-muted leading-relaxed">
+                  {m.desc}
+                </p>
               </div>
-              <h4 className="font-heading text-base font-bold text-white mb-2">{m.title}</h4>
-              <p className="text-xs text-neutral-300 leading-relaxed">{m.desc}</p>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* Call to action (Clean Typography, No Box UI) */}
-      <div className="border-t border-white/10 pt-12 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-        <div>
-          <h3 className="font-heading text-2xl sm:text-3xl font-extrabold text-white">
-            Ready To Power Your Stage With Eswari?
-          </h3>
-          <p className="text-xs sm:text-sm text-neutral-300 mt-1">
-            Check date availability instantly and lock your package with a 25% advance.
-          </p>
+      {/* Closing CTA */}
+      <div className="border-t border-white/[0.12]">
+        <div className="container-page section-tight flex flex-col md:flex-row md:items-end justify-between gap-8">
+          <div>
+            <span className="label label-amber">Instant date lock</span>
+            <h2 className="font-heading text-h2 text-white mt-3">
+              Ready to power your stage?
+            </h2>
+            <p className="mt-3 text-body text-fg-muted leading-relaxed max-w-measure">
+              Check date availability live, then lock the rig with a 25%
+              advance. Balance settles on site after sound-check.
+            </p>
+          </div>
+          <Link href="/book" className="btn-primary shrink-0">
+            <span>Check available dates</span>
+            <ArrowRight className="w-4 h-4" aria-hidden />
+          </Link>
         </div>
-        <Link
-          href="/book"
-          className="px-9 py-4 rounded-full bg-amber text-ink font-bold text-xs uppercase tracking-widest hover:brightness-110 transition-all shrink-0 "
-        >
-          Check Available Dates
-        </Link>
       </div>
     </div>
   );

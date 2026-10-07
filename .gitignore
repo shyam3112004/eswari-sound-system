@@ -26,6 +26,9 @@ yarn-error.log*
 .env
 .env*.local
 
+# local dev-server output redirect
+.dev-server.log
+
 # vercel
 .vercel
 

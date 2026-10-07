@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { DEFAULT_PORTFOLIO } from '@/lib/defaultPortfolio';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,96 +14,49 @@ export async function GET(request: NextRequest) {
       where.category = category;
     }
 
-    let items = await prisma.portfolioItem.findMany({
-      where,
-      orderBy: [{ sortOrder: 'asc' }, { createdAt: 'desc' }],
-    });
-
-    // If database has 0 items, seed the default portfolio items so the gallery is never empty
-    if (items.length === 0 && (!category || category === 'all')) {
-      const defaultItems = [
-        {
-          title: 'South India Indie Rock Tour 2026',
-          category: 'concert',
-          location: 'YMCA Grounds, Chennai',
-          crowd: '8,000+ Attendees',
-          specs: '16-Box Flown Line Array, 24 Moving Heads, Dual 18" Subs',
-          tag: 'Arena Concert',
-          mediaType: 'video',
-          mediaUrl: '/assets/Viedos/05_gallery_20261005103713.mp4',
-          thumbnailUrl: '/assets/images/keyframes/image10_gallery_start.jpg',
-          sortOrder: 1,
-        },
-        {
-          title: 'Royal Chettinad Destination Wedding',
-          category: 'wedding',
-          location: 'Karaikudi Palace Grounds',
-          crowd: '1,500 Guests',
-          specs: 'Tungsten 3200K Stage Wash, Wireless Mics, Walnut Stage Deck',
-          tag: 'Luxury Wedding',
-          mediaType: 'image',
-          mediaUrl: '/assets/images/keyframes/image08_packages_start.jpg',
-          thumbnailUrl: '/assets/images/keyframes/image08_packages_start.jpg',
-          sortOrder: 2,
-        },
-        {
-          title: 'Mega Tech Summit Keynote & Expo',
-          category: 'corporate',
-          location: 'Chennai Trade Centre, Nandambakkam',
-          crowd: '3,500 Delegates',
-          specs: 'Speech Intelligibility DSP, Digital Mics, Low-Profile Truss',
-          tag: 'Corporate Summit',
-          mediaType: 'video',
-          mediaUrl: '/assets/Viedos/03_services_20261005103713.mp4',
-          thumbnailUrl: '/assets/images/keyframes/image06_services_start.jpg',
-          sortOrder: 3,
-        },
-        {
-          title: 'Inter-College Cultural Music Fest',
-          category: 'college',
-          location: 'Loyola College Grounds, Chennai',
-          crowd: '12,000+ Students',
-          specs: 'Full Arena Ground Stack, Subwoofer Wall, CO2 Blasters',
-          tag: 'College Fest',
-          mediaType: 'video',
-          mediaUrl: '/assets/Viedos/01_home_20261005103713.mp4',
-          thumbnailUrl: '/assets/images/keyframes/image01_anchor_lineup.jpg',
-          sortOrder: 4,
-        },
-        {
-          title: 'Sunburn Campus EDM Night Showcase',
-          category: 'concert',
-          location: 'PSG Tech Campus, Coimbatore',
-          crowd: '6,500 Attendees',
-          specs: 'Subwoofer Array, DMX Beam Fixtures, High-Output Hazers',
-          tag: 'EDM Concert',
-          mediaType: 'image',
-          mediaUrl: '/assets/images/keyframes/image11_gallery_end.jpg',
-          thumbnailUrl: '/assets/images/keyframes/image11_gallery_end.jpg',
-          sortOrder: 5,
-        },
-        {
-          title: 'Grand Classical Temple Arangetram',
-          category: 'wedding',
-          location: 'Meenakshi Amman Hall, Madurai',
-          crowd: '2,000 Devotees',
-          specs: 'Zero Acoustic Feedback Calibration, Shure Ribbon Mics',
-          tag: 'Acoustic Heritage',
-          mediaType: 'image',
-          mediaUrl: '/assets/images/keyframes/image04_about_start.jpg',
-          thumbnailUrl: '/assets/images/keyframes/image04_about_start.jpg',
-          sortOrder: 6,
-        },
-      ];
-
-      for (const item of defaultItems) {
-        await prisma.portfolioItem.create({ data: item });
-      }
-
+    let items;
+    try {
       items = await prisma.portfolioItem.findMany({
         where,
         orderBy: [{ sortOrder: 'asc' }, { createdAt: 'desc' }],
       });
+    } catch (err) {
+      // Serverless runtimes cannot open a bundled SQLite file. Degrade to the
+      // curated defaults like every other read path (packages, availability,
+      // materials) instead of returning a 500.
+      console.warn('Portfolio DB unavailable, serving curated defaults:', err);
+      const defaults = DEFAULT_PORTFOLIO.map((item, i) => ({
+        id: `default-${i + 1}`,
+        ...item,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })).filter((item) => !category || category === 'all' || item.category === category);
+      return NextResponse.json({ success: true, items: defaults });
+    }
+
+    // If the database has 0 items, seed the default portfolio so the gallery
+    // is never empty. Serverless filesystems are read-only: if the write fails
+    // we still return a healthy empty response instead of a 500.
+    if (items.length === 0 && (!category || category === 'all')) {
+      try {
+        for (const item of DEFAULT_PORTFOLIO) {
+          await prisma.portfolioItem.create({ data: item });
+        }
+        items = await prisma.portfolioItem.findMany({
+          where,
+          orderBy: [{ sortOrder: 'asc' }, { createdAt: 'desc' }],
+        });
+      } catch (err) {
+        // Read-only runtime (e.g. serverless): defaults should already have
+        // been baked in at build time by prisma/seed.ts.
+        console.error('Portfolio default seed skipped:', err);
+        items = DEFAULT_PORTFOLIO.map((item, i) => ({
+          id: `default-${i + 1}`,
+          ...item,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        }));
+      }
     }
 
     return NextResponse.json({ success: true, items });

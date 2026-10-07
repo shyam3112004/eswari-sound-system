@@ -2,20 +2,25 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import {
-  FileText,
-  Sparkles,
-  CheckCircle2,
-  AlertCircle,
-  Radio,
-  Send,
-  Loader2,
-  Calendar,
-  Volume2,
-  Zap,
-  Layers,
-  Phone,
-} from 'lucide-react';
+import { ArrowRight, Loader2, Send } from 'lucide-react';
+
+const STEPS = [
+  {
+    num: '01',
+    title: 'Scope lands with the desk',
+    desc: 'Your rider, crowd size and dates go straight to the senior sound designer — not a call centre.',
+  },
+  {
+    num: '02',
+    title: 'Itemised quotation in 24 hours',
+    desc: 'Line array count, lighting plot, generators and crew, priced as one line per item.',
+  },
+  {
+    num: '03',
+    title: 'Date held while you decide',
+    desc: 'A 25% advance locks the rig on the operations calendar; balance settles on site.',
+  },
+];
 
 export default function InquiryPage() {
   const [formData, setFormData] = useState({
@@ -89,40 +94,35 @@ export default function InquiryPage() {
 
   if (successId) {
     return (
-      <div className="min-h-[80vh] flex items-center justify-center px-4 py-16">
-        <div className="max-w-xl w-full text-center space-y-6 glass-card-amber rounded-3xl p-8 sm:p-12 border border-amber/30 shadow-2xl">
-          <div className="w-16 h-16 rounded-full bg-emerald-950/80 border border-emerald-500/40 text-emerald-400 flex items-center justify-center mx-auto shadow-xl">
-            <CheckCircle2 className="w-8 h-8" />
-          </div>
-
-          <h1 className="font-heading text-3xl font-extrabold text-white">
-            Custom Quotation Request Dispatched
+      <div className="min-h-screen bg-ink text-white">
+        <div className="container-page pt-28 lg:pt-36 pb-24 max-w-3xl">
+          <span className="label label-amber">Dispatched · quotation desk</span>
+          <h1 className="font-heading text-h1 text-white mt-4">
+            Request received
           </h1>
-
-          <p className="text-xs sm:text-sm text-neutral-300 leading-relaxed">
-            Our Senior Sound Designer & Fleet Coordinator will review your stage rider specifications and contact you within 24 hours with an itemized proposal.
+          <p className="mt-5 text-body text-fg-muted leading-relaxed max-w-measure">
+            The senior sound designer and fleet coordinator will read your
+            rider and come back within 24 hours with an itemised proposal —
+            line array count, lighting plot, power and crew, priced per item.
           </p>
 
-          <div className="p-4 rounded-2xl bg-black/40 border border-white/10 font-mono text-xs flex justify-between items-center text-neutral-300">
-            <span>Inquiry Tracking ID:</span>
-            <span className="text-amber font-bold">{successId}</span>
+          <div className="mt-10 border-t border-white/[0.12] pt-5 flex flex-wrap items-baseline justify-between gap-4">
+            <span className="label">Inquiry tracking ID</span>
+            <span className="font-mono text-amber font-bold">{successId}</span>
           </div>
 
-          <div className="pt-4 flex flex-col sm:flex-row gap-3">
+          <div className="mt-10 flex flex-col sm:flex-row items-start gap-6">
             <a
               href={`https://wa.me/${process.env.NEXT_PUBLIC_WA_NUMBER || '919876543210'}?text=${encodeURIComponent(`Hi Eswari Sound System, I have submitted a quotation request with ID: ${successId}`)}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex-1 py-3.5 rounded-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all"
+              className="inline-flex items-center justify-center gap-2 px-7 py-4 rounded-[2px] bg-fg text-ink font-mono text-[11px] font-semibold uppercase tracking-[0.16em] hover:bg-white transition-colors"
             >
-              <span>Instant WhatsApp Follow-up</span>
+              Follow up on WhatsApp
             </a>
-
-            <Link
-              href="/"
-              className="flex-1 py-3.5 rounded-full glass-card hover:bg-white/10 text-white font-medium text-xs uppercase tracking-wider border border-white/20 transition-all flex items-center justify-center"
-            >
-              <span>Back To Homepage</span>
+            <Link href="/" className="link-arrow">
+              <span>Back to homepage</span>
+              <ArrowRight className="w-3.5 h-3.5" aria-hidden />
             </Link>
           </div>
         </div>
@@ -142,205 +142,247 @@ export default function InquiryPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-ink text-white py-16 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto">
+    <div className="min-h-screen bg-ink text-white">
       {/* Header */}
-      <div className="text-center max-w-2xl mx-auto mb-14 space-y-4">
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass-card border border-amber/30 text-amber text-xs font-mono uppercase tracking-widest">
-          <Sparkles className="w-3.5 h-3.5 text-amber" />
-          <span>Arena Festivals & Tour Production</span>
+      <div className="container-page pt-24 lg:pt-32 pb-8">
+        <div className="max-w-3xl">
+          <span className="label label-amber">Arena festivals & tour production</span>
+          <h1 className="font-heading text-h1 text-white mt-4">
+            Request a custom festival quotation
+          </h1>
+          <p className="mt-5 text-body text-fg-muted leading-relaxed max-w-measure">
+            Multi-day music festivals, college cultural summits and arena
+            tours. Tell us the venue geometry and crowd — we model the system
+            around it, then price it line by line.
+          </p>
         </div>
-
-        <h1 className="font-heading text-3xl sm:text-5xl font-black text-white tracking-tight">
-          Request Custom <span className="text-gradient-amber">Festival Quotation</span>
-        </h1>
-
-        <p className="text-xs sm:text-sm text-neutral-300 leading-relaxed">
-          Planning a multi-day music festival, college cultural summit, or large arena tour? We engineer customized acoustic modeling tailored to your exact venue geometry.
-        </p>
       </div>
 
-      <div className="glass-card rounded-3xl p-8 sm:p-12 border border-white/10 shadow-2xl">
-        {error && (
-          <div className="mb-6 p-4 rounded-2xl bg-red-950/60 border border-red-500/30 text-red-300 text-xs flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />
-            <span>{error}</span>
+      <div className="container-page grid grid-cols-1 lg:grid-cols-12 gap-x-14 gap-y-14 pt-8 pb-24">
+        {/* Left rail: how the quotation runs */}
+        <aside className="lg:col-span-4">
+          <div className="border-b border-white/[0.12] pb-4">
+            <span className="label">How this runs</span>
           </div>
-        )}
+          {STEPS.map((s) => (
+            <div key={s.num} className="border-b border-white/[0.12] py-6">
+              <div className="flex items-baseline gap-4">
+                <span className="numeral text-h4">{s.num}</span>
+                <h2 className="font-heading text-base font-bold text-white">
+                  {s.title}
+                </h2>
+              </div>
+              <p className="mt-2.5 text-small text-fg-muted leading-relaxed max-w-measure">
+                {s.desc}
+              </p>
+            </div>
+          ))}
 
-        <form onSubmit={handleSubmit} className="space-y-6 text-xs">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+          <div className="border-l-2 border-amber pl-5 py-6">
+            <p className="font-heading text-base font-bold text-white">
+              Show inside the week?
+            </p>
+            <p className="mt-1.5 text-small text-fg-muted leading-relaxed max-w-measure">
+              Ring the depot line instead. Multi-rig deployments are quoted on
+              the call, not by form.
+            </p>
+            <a
+              href="tel:+919876543210"
+              className="link-arrow mt-4 inline-flex"
+            >
+              <span>+91 98765 43210</span>
+              <ArrowRight className="w-3.5 h-3.5" aria-hidden />
+            </a>
+          </div>
+        </aside>
+
+        {/* Right: underline form */}
+        <div className="lg:col-span-8 lg:border-l lg:border-white/10 lg:pl-14">
+          <div className="border-b border-white/[0.12] pb-4">
+            <span className="label">Rider &amp; scope</span>
+          </div>
+
+          {error && (
+            <div className="alert alert-error mt-6" role="alert">
+              {error}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="pt-8 space-y-8">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
+              <div>
+                <label className="field-label" htmlFor="inq-name">
+                  Contact person
+                </label>
+                <input
+                  id="inq-name"
+                  type="text"
+                  required
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  placeholder="e.g. Ramesh V"
+                  className="field"
+                />
+              </div>
+              <div>
+                <label className="field-label" htmlFor="inq-phone">
+                  Phone number
+                </label>
+                <input
+                  id="inq-phone"
+                  type="tel"
+                  required
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  placeholder="9876543210"
+                  className="field font-mono"
+                />
+              </div>
+              <div>
+                <label className="field-label" htmlFor="inq-email">
+                  Email address
+                </label>
+                <input
+                  id="inq-email"
+                  type="email"
+                  required
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  placeholder="ramesh@festival.org"
+                  className="field"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-8">
+              <div>
+                <label className="field-label" htmlFor="inq-type">
+                  Event category
+                </label>
+                <select
+                  id="inq-type"
+                  value={formData.eventType}
+                  onChange={(e) => setFormData({ ...formData, eventType: e.target.value })}
+                  className="field bg-ink"
+                >
+                  <option value="College Cultural Music Fest">College cultural music fest</option>
+                  <option value="Multi-Day Music Festival">Multi-day music festival</option>
+                  <option value="Mega Concert / Arena Tour">Mega concert / arena tour</option>
+                  <option value="Temple / Spiritual Gathering">Temple / spiritual gathering</option>
+                  <option value="Political Rally / Public Address">Political rally / public address</option>
+                  <option value="Corporate Global Summit">Corporate global summit</option>
+                </select>
+              </div>
+              <div>
+                <label className="field-label" htmlFor="inq-date">
+                  Tentative date
+                </label>
+                <input
+                  id="inq-date"
+                  type="date"
+                  value={formData.eventDate}
+                  onChange={(e) => setFormData({ ...formData, eventDate: e.target.value })}
+                  className="field font-mono"
+                />
+              </div>
+              <div>
+                <label className="field-label" htmlFor="inq-crowd">
+                  Expected audience
+                </label>
+                <select
+                  id="inq-crowd"
+                  value={formData.crowdSize}
+                  onChange={(e) => setFormData({ ...formData, crowdSize: e.target.value })}
+                  className="field bg-ink"
+                >
+                  <option value="1,000 - 3,000">1,000 – 3,000 attendees</option>
+                  <option value="3,000 - 6,000">3,000 – 6,000 attendees</option>
+                  <option value="6,000 - 12,000">6,000 – 12,000 attendees</option>
+                  <option value="12,000+ Stadium Scale">12,000+ stadium scale</option>
+                </select>
+              </div>
+            </div>
+
             <div>
-              <label className="block font-mono uppercase tracking-wider text-neutral-300 mb-1.5">
-                Contact Person Name
+              <label className="field-label" htmlFor="inq-venue">
+                Venue location &amp; city
               </label>
               <input
+                id="inq-venue"
                 type="text"
                 required
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="e.g. Ramesh V"
-                className="w-full px-4 py-3 rounded-xl bg-ink/80 border border-white/15 text-white placeholder-neutral-500 focus:outline-none focus:border-amber focus:ring-1 focus:ring-amber"
+                value={formData.venue}
+                onChange={(e) => setFormData({ ...formData, venue: e.target.value })}
+                placeholder="e.g. YMCA Grounds, Royapettah, Chennai (outdoor open air)"
+                className="field"
               />
             </div>
 
+            {/* Capability list — quiet rows, dot marks the selection */}
             <div>
-              <label className="block font-mono uppercase tracking-wider text-neutral-300 mb-1.5">
-                10-Digit Phone Number
-              </label>
-              <input
-                type="tel"
-                required
-                value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                placeholder="9876543210"
-                className="w-full px-4 py-3 rounded-xl bg-ink/80 border border-white/15 text-white placeholder-neutral-500 focus:outline-none focus:border-amber focus:ring-1 focus:ring-amber font-mono"
-              />
-            </div>
-
-            <div>
-              <label className="block font-mono uppercase tracking-wider text-neutral-300 mb-1.5">
-                Email Address
-              </label>
-              <input
-                type="email"
-                required
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                placeholder="ramesh@festival.org"
-                className="w-full px-4 py-3 rounded-xl bg-ink/80 border border-white/15 text-white placeholder-neutral-500 focus:outline-none focus:border-amber focus:ring-1 focus:ring-amber"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-            <div>
-              <label className="block font-mono uppercase tracking-wider text-neutral-300 mb-1.5">
-                Event Category
-              </label>
-              <select
-                value={formData.eventType}
-                onChange={(e) => setFormData({ ...formData, eventType: e.target.value })}
-                className="w-full px-4 py-3 rounded-xl bg-ink/80 border border-white/15 text-white focus:outline-none focus:border-amber focus:ring-1 focus:ring-amber"
-              >
-                <option value="College Cultural Music Fest">College Cultural Music Fest</option>
-                <option value="Multi-Day Music Festival">Multi-Day Music Festival</option>
-                <option value="Mega Concert / Arena Tour">Mega Concert / Arena Tour</option>
-                <option value="Temple / Spiritual Gathering">Temple / Spiritual Gathering</option>
-                <option value="Political Rally / Public Address">Political Rally / Public Address</option>
-                <option value="Corporate Global Summit">Corporate Global Summit</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block font-mono uppercase tracking-wider text-neutral-300 mb-1.5">
-                Tentative Date
-              </label>
-              <input
-                type="date"
-                value={formData.eventDate}
-                onChange={(e) => setFormData({ ...formData, eventDate: e.target.value })}
-                className="w-full px-4 py-3 rounded-xl bg-ink/80 border border-white/15 text-white focus:outline-none focus:border-amber focus:ring-1 focus:ring-amber font-mono"
-              />
-            </div>
-
-            <div>
-              <label className="block font-mono uppercase tracking-wider text-neutral-300 mb-1.5">
-                Expected Audience Size
-              </label>
-              <select
-                value={formData.crowdSize}
-                onChange={(e) => setFormData({ ...formData, crowdSize: e.target.value })}
-                className="w-full px-4 py-3 rounded-xl bg-ink/80 border border-white/15 text-white focus:outline-none focus:border-amber focus:ring-1 focus:ring-amber"
-              >
-                <option value="1,000 - 3,000">1,000 - 3,000 Attendees</option>
-                <option value="3,000 - 6,000">3,000 - 6,000 Attendees</option>
-                <option value="6,000 - 12,000">6,000 - 12,000 Attendees</option>
-                <option value="12,000+ Stadium Scale">12,000+ Stadium / Arena Scale</option>
-              </select>
-            </div>
-          </div>
-
-          <div>
-            <label className="block font-mono uppercase tracking-wider text-neutral-300 mb-1.5">
-              Venue Location & City
-            </label>
-            <input
-              type="text"
-              required
-              value={formData.venue}
-              onChange={(e) => setFormData({ ...formData, venue: e.target.value })}
-              placeholder="e.g. YMCA Grounds, Royapettah, Chennai (Outdoor Open Air)"
-              className="w-full px-4 py-3 rounded-xl bg-ink/80 border border-white/15 text-white placeholder-neutral-500 focus:outline-none focus:border-amber focus:ring-1 focus:ring-amber"
-            />
-          </div>
-
-          {/* Technical Specs Checklist */}
-          <div>
-            <label className="block font-mono uppercase tracking-wider text-neutral-300 mb-2">
-              Select Required Production Capabilities
-            </label>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              {techSpecs.map((spec) => {
-                const isSelected = selectedSpecs.includes(spec);
-                return (
-                  <button
-                    key={spec}
-                    type="button"
-                    onClick={() => toggleSpec(spec)}
-                    className={`p-3 rounded-xl border text-left flex items-center justify-between transition-all ${
-                      isSelected
-                        ? 'bg-amber/15 border-amber text-white font-medium'
-                        : 'bg-white/5 border-white/10 text-neutral-400 hover:text-white'
-                    }`}
-                  >
-                    <span>{spec}</span>
-                    <span
-                      className={`w-3.5 h-3.5 rounded-full border flex items-center justify-center shrink-0 ml-2 ${
-                        isSelected ? 'border-amber bg-amber text-ink' : 'border-neutral-500'
+              <span className="field-label">Required production capabilities</span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-10">
+                {techSpecs.map((spec) => {
+                  const isSelected = selectedSpecs.includes(spec);
+                  return (
+                    <button
+                      key={spec}
+                      type="button"
+                      onClick={() => toggleSpec(spec)}
+                      aria-pressed={isSelected}
+                      className={`text-left border-b border-white/[0.12] py-3 text-small transition-colors flex items-center justify-between gap-4 ${
+                        isSelected ? 'text-white' : 'text-fg-muted hover:text-fg-soft'
                       }`}
                     >
-                      {isSelected && '✓'}
-                    </span>
-                  </button>
-                );
-              })}
+                      <span className={isSelected ? 'marker-dot' : 'pl-4'}>
+                        {spec}
+                      </span>
+                      <span
+                        className={`label shrink-0 ${isSelected ? 'label-amber' : ''}`}
+                      >
+                        {isSelected ? 'In scope' : 'Add'}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-          </div>
 
-          <div>
-            <label className="block font-mono uppercase tracking-wider text-neutral-300 mb-1.5">
-              Specific Band / Artist Rider Notes
-            </label>
-            <textarea
-              rows={4}
-              required
-              value={formData.message}
-              onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-              placeholder="Specify live band input list, monitor requirements, drum risers, generator specs, or sound check schedules..."
-              className="w-full px-4 py-3 rounded-xl bg-ink/80 border border-white/15 text-white placeholder-neutral-500 focus:outline-none focus:border-amber focus:ring-1 focus:ring-amber resize-none"
-            />
-          </div>
+            <div>
+              <label className="field-label" htmlFor="inq-notes">
+                Band / artist rider notes
+              </label>
+              <textarea
+                id="inq-notes"
+                rows={4}
+                required
+                value={formData.message}
+                onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                placeholder="Input list, monitor requirements, drum risers, generator specs or sound-check schedule…"
+                className="field resize-none"
+              />
+            </div>
 
-          <div className="pt-2">
-            <button
-              type="submit"
-              disabled={submitting}
-              className="w-full py-4 rounded-xl bg-amber text-ink font-bold uppercase tracking-widest text-xs hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-60"
-            >
-              {submitting ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Processing Technical Inquiry...</span>
-                </>
-              ) : (
-                <>
-                  <Send className="w-4 h-4" />
-                  <span>Submit Custom Quotation Request</span>
-                </>
-              )}
-            </button>
-          </div>
-        </form>
+            <div className="hairline pt-7 flex flex-wrap items-center justify-between gap-5">
+              <p className="label max-w-[36ch]">
+                One arena or multi-stage event per date
+              </p>
+              <button type="submit" disabled={submitting} className="btn-primary">
+                {submitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" aria-hidden />
+                    <span>Sending rider</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Submit quotation request</span>
+                    <Send className="w-4 h-4" aria-hidden />
+                  </>
+                )}
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );

@@ -1,4 +1,6 @@
 import { prisma } from './prisma';
+import { unlink } from 'fs/promises';
+import path from 'path';
 
 // Global shared store across serverless lambdas in warm execution
 const globalStore = global as unknown as {
@@ -19,6 +21,7 @@ export interface CreateMaterialInput {
   unit?: string;
   isAvailable?: boolean;
   sortOrder?: number;
+  images?: string[] | null;
 }
 
 export interface UpdateMaterialInput {
@@ -29,11 +32,39 @@ export interface UpdateMaterialInput {
   unit?: string;
   isAvailable?: boolean;
   sortOrder?: number;
+  images?: string[] | null;
 }
 
 export interface BookingMaterialInput {
   materialId: string;
   quantity: number;
+}
+
+// `images` is persisted as a JSON string (same convention as Package.features)
+// but every store API returns it as a plain string[].
+function serializeImages(images?: string[] | null): string | null {
+  if (!images || images.length === 0) return null;
+  return JSON.stringify(images.filter((u) => typeof u === 'string' && u.trim()));
+}
+
+function parseImages(value: unknown): string[] {
+  if (Array.isArray(value)) return value.filter((u) => typeof u === 'string' && u);
+  if (typeof value === 'string' && value) {
+    try {
+      const parsed = JSON.parse(value);
+      if (Array.isArray(parsed)) return parsed.filter((u) => typeof u === 'string' && u);
+    } catch {
+      return [value];
+    }
+  }
+  return [];
+}
+
+function toClientMaterial(material: any): any {
+  return {
+    ...material,
+    images: parseImages(material.images),
+  };
 }
 
 // Material CRUD Operations
@@ -47,6 +78,7 @@ export async function createMaterialSafe(input: CreateMaterialInput) {
     unit: input.unit || 'unit',
     isAvailable: input.isAvailable ?? true,
     sortOrder: input.sortOrder ?? 0,
+    images: serializeImages(input.images),
     createdAt: new Date(),
     updatedAt: new Date(),
   };
@@ -56,12 +88,14 @@ export async function createMaterialSafe(input: CreateMaterialInput) {
       data: materialData,
     });
 
-    inMemoryMaterials.set(dbMaterial.id, dbMaterial);
-    return dbMaterial;
+    const clientMaterial = toClientMaterial(dbMaterial);
+    inMemoryMaterials.set(dbMaterial.id, clientMaterial);
+    return clientMaterial;
   } catch (dbErr) {
     console.warn('Prisma createMaterial failed, storing in resilient fallback store:', dbErr);
-    inMemoryMaterials.set(materialData.id, materialData);
-    return materialData;
+    const clientMaterial = toClientMaterial(materialData);
+    inMemoryMaterials.set(materialData.id, clientMaterial);
+    return clientMaterial;
   }
 }
 
@@ -75,6 +109,7 @@ export const DEFAULT_MATERIALS = [
     unit: 'unit',
     isAvailable: true,
     sortOrder: 1,
+    images: null,
     createdAt: new Date(),
     updatedAt: new Date(),
   },
@@ -87,6 +122,7 @@ export const DEFAULT_MATERIALS = [
     unit: 'unit',
     isAvailable: true,
     sortOrder: 2,
+    images: null,
     createdAt: new Date(),
     updatedAt: new Date(),
   },
@@ -99,6 +135,7 @@ export const DEFAULT_MATERIALS = [
     unit: 'set',
     isAvailable: true,
     sortOrder: 3,
+    images: null,
     createdAt: new Date(),
     updatedAt: new Date(),
   },
@@ -111,6 +148,7 @@ export const DEFAULT_MATERIALS = [
     unit: 'unit',
     isAvailable: true,
     sortOrder: 4,
+    images: null,
     createdAt: new Date(),
     updatedAt: new Date(),
   },
@@ -123,6 +161,7 @@ export const DEFAULT_MATERIALS = [
     unit: 'unit',
     isAvailable: true,
     sortOrder: 5,
+    images: null,
     createdAt: new Date(),
     updatedAt: new Date(),
   },
@@ -135,6 +174,7 @@ export const DEFAULT_MATERIALS = [
     unit: 'unit',
     isAvailable: true,
     sortOrder: 6,
+    images: null,
     createdAt: new Date(),
     updatedAt: new Date(),
   },
@@ -147,6 +187,7 @@ export const DEFAULT_MATERIALS = [
     unit: 'unit',
     isAvailable: true,
     sortOrder: 7,
+    images: null,
     createdAt: new Date(),
     updatedAt: new Date(),
   },
@@ -159,6 +200,7 @@ export const DEFAULT_MATERIALS = [
     unit: 'unit',
     isAvailable: true,
     sortOrder: 8,
+    images: null,
     createdAt: new Date(),
     updatedAt: new Date(),
   },
@@ -171,6 +213,7 @@ export const DEFAULT_MATERIALS = [
     unit: 'piece',
     isAvailable: true,
     sortOrder: 9,
+    images: null,
     createdAt: new Date(),
     updatedAt: new Date(),
   },
@@ -183,6 +226,7 @@ export const DEFAULT_MATERIALS = [
     unit: 'unit',
     isAvailable: true,
     sortOrder: 10,
+    images: null,
     createdAt: new Date(),
     updatedAt: new Date(),
   },
@@ -195,6 +239,7 @@ export const DEFAULT_MATERIALS = [
     unit: 'unit',
     isAvailable: true,
     sortOrder: 11,
+    images: null,
     createdAt: new Date(),
     updatedAt: new Date(),
   },
@@ -207,6 +252,7 @@ export const DEFAULT_MATERIALS = [
     unit: 'unit',
     isAvailable: true,
     sortOrder: 12,
+    images: null,
     createdAt: new Date(),
     updatedAt: new Date(),
   },
@@ -219,6 +265,7 @@ export const DEFAULT_MATERIALS = [
     unit: 'unit',
     isAvailable: true,
     sortOrder: 13,
+    images: null,
     createdAt: new Date(),
     updatedAt: new Date(),
   },
@@ -241,7 +288,7 @@ export async function getAllMaterialsSafe() {
       where: { isAvailable: true },
       orderBy: [{ sortOrder: 'asc' }, { createdAt: 'desc' }],
     });
-    dbMaterials.forEach((m) => map.set(m.id, m));
+    dbMaterials.forEach((m) => map.set(m.id, toClientMaterial(m)));
   } catch (err) {
     console.warn('Prisma getAllMaterials error, returning fallback memory materials:', err);
   }
@@ -249,6 +296,7 @@ export async function getAllMaterialsSafe() {
   seedDefaultMaterialsIfEmpty(map);
 
   return Array.from(map.values())
+    .map(toClientMaterial)
     .filter((m) => m.isAvailable)
     .sort((a, b) => {
       if (a.sortOrder !== b.sortOrder) return a.sortOrder - b.sortOrder;
@@ -263,14 +311,14 @@ export async function getAllMaterialsForAdminSafe() {
     const dbMaterials = await prisma.material.findMany({
       orderBy: [{ sortOrder: 'asc' }, { createdAt: 'desc' }],
     });
-    dbMaterials.forEach((m) => map.set(m.id, m));
+    dbMaterials.forEach((m) => map.set(m.id, toClientMaterial(m)));
   } catch (err) {
     console.warn('Prisma getAllMaterials error, returning fallback memory materials:', err);
   }
 
   seedDefaultMaterialsIfEmpty(map);
 
-  return Array.from(map.values()).sort((a, b) => {
+  return Array.from(map.values()).map(toClientMaterial).sort((a, b) => {
     if (a.sortOrder !== b.sortOrder) return a.sortOrder - b.sortOrder;
     return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
   });
@@ -278,7 +326,7 @@ export async function getAllMaterialsForAdminSafe() {
 
 export async function getMaterialByIdSafe(id: string) {
   if (inMemoryMaterials.has(id)) {
-    return inMemoryMaterials.get(id);
+    return toClientMaterial(inMemoryMaterials.get(id));
   }
 
   try {
@@ -286,8 +334,9 @@ export async function getMaterialByIdSafe(id: string) {
       where: { id },
     });
     if (material) {
-      inMemoryMaterials.set(material.id, material);
-      return material;
+      const clientMaterial = toClientMaterial(material);
+      inMemoryMaterials.set(material.id, clientMaterial);
+      return clientMaterial;
     }
   } catch (err) {
     console.warn('Prisma getMaterialById error:', err);
@@ -295,11 +344,13 @@ export async function getMaterialByIdSafe(id: string) {
 
   const defaultMat = DEFAULT_MATERIALS.find((m) => m.id === id);
   if (defaultMat) {
-    inMemoryMaterials.set(defaultMat.id, defaultMat);
-    return defaultMat;
+    const clientMaterial = toClientMaterial(defaultMat);
+    inMemoryMaterials.set(defaultMat.id, clientMaterial);
+    return clientMaterial;
   }
 
-  return inMemoryMaterials.get(id) || null;
+  const memoryMat = inMemoryMaterials.get(id);
+  return memoryMat ? toClientMaterial(memoryMat) : null;
 }
 
 export async function updateMaterialSafe(id: string, input: UpdateMaterialInput) {
@@ -317,23 +368,38 @@ export async function updateMaterialSafe(id: string, input: UpdateMaterialInput)
   try {
     const dbUpdated = await prisma.material.update({
       where: { id },
-      data: input,
+      data: {
+        name: input.name,
+        category: input.category,
+        description: input.description,
+        pricePerDay: input.pricePerDay,
+        unit: input.unit,
+        isAvailable: input.isAvailable,
+        sortOrder: input.sortOrder,
+        images: input.images !== undefined ? serializeImages(input.images) : undefined,
+      },
     });
-    inMemoryMaterials.set(id, dbUpdated);
-    return dbUpdated;
+    const clientMaterial = toClientMaterial(dbUpdated);
+    inMemoryMaterials.set(id, clientMaterial);
+    return clientMaterial;
   } catch (err) {
     console.warn('Prisma updateMaterial error:', err);
   }
 
-  return inMemoryMaterials.get(id);
+  return toClientMaterial(inMemoryMaterials.get(id));
 }
 
 export async function deleteMaterialSafe(id: string) {
+  const existing = await getMaterialByIdSafe(id);
+
   try {
     await prisma.material.delete({
       where: { id },
     });
     inMemoryMaterials.delete(id);
+    if (Array.isArray(existing?.images) && existing.images.length > 0) {
+      await removeMaterialImageFiles(existing.images);
+    }
     return true;
   } catch (err) {
     console.warn('Prisma deleteMaterial error:', err);
@@ -343,6 +409,24 @@ export async function deleteMaterialSafe(id: string) {
       inMemoryMaterials.set(id, { ...existing, isAvailable: false });
     }
     return false;
+  }
+}
+
+// Deletes the uploaded photo files for a material. Only ever touches files
+// under /public/uploads/materials/ — the URL prefix and basename are both
+// validated so a stored URL can never escape that directory.
+async function removeMaterialImageFiles(images: string[]) {
+  const uploadRoot = path.join(process.cwd(), 'public', 'uploads', 'materials');
+
+  for (const url of images) {
+    try {
+      if (typeof url !== 'string' || !url.startsWith('/uploads/materials/')) continue;
+      const fileName = path.basename(url);
+      if (!fileName || fileName === '.' || fileName === '..') continue;
+      await unlink(path.join(uploadRoot, fileName));
+    } catch {
+      // File already gone or not on local disk — never fail the delete.
+    }
   }
 }
 

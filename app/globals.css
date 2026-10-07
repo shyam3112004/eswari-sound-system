@@ -3,11 +3,17 @@
 @tailwind utilities;
 
 :root {
-  --color-ink: #0B0B0F;
+  --color-ink: #0b0b0f;
   --color-ink-raised: #131318;
-  --color-amber: #FFB11A;
-  --color-amber-soft: #C9A86A;
-  --color-haze: #38BDF8;
+  --color-amber: #ffb11a;
+  --color-amber-soft: #c9a86a;
+  --color-fg: #f5f5f7;
+  --color-fg-soft: #b4b4bc;
+  --color-fg-muted: #9a9aa5;
+  --color-hairline: rgba(255, 255, 255, 0.12);
+  --color-hairline-strong: rgba(255, 255, 255, 0.22);
+  --section-y: clamp(6rem, 11vw, 10rem);
+  --page-x: clamp(1.25rem, 4vw, 3rem);
 }
 
 @layer base {
@@ -16,8 +22,9 @@
   }
 
   html {
-    background-color: #0B0B0F;
-    color: #FFFFFF;
+    background-color: var(--color-ink);
+    color: var(--color-fg);
+    scroll-behavior: smooth;
   }
 
   html.lenis {
@@ -33,48 +40,367 @@
   }
 
   body {
-    background-color: #0B0B0F;
-    color: #F3F4F6;
-    font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: var(--color-ink);
+    color: var(--color-fg);
+    font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-size: 0.9375rem;
+    line-height: 1.65;
     overflow-x: hidden;
     min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     font-family: var(--font-space-grotesk), sans-serif;
     letter-spacing: -0.02em;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
   }
 
   ::selection {
-    background: rgba(255, 177, 26, 0.85);
-    color: #0B0B0F;
+    background: rgba(255, 177, 26, 0.9);
+    color: #0b0b0f;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-amber);
+    outline-offset: 3px;
+    border-radius: 1px;
+  }
+
+  input,
+  textarea,
+  select,
+  button {
+    font: inherit;
+    color: inherit;
   }
 }
 
 @layer components {
-  /* Surfaces: flat, quiet, no glass glow. */
-  .glass-panel {
-    background: rgba(11, 11, 15, 0.92);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  /* ── Layout ─────────────────────────────────────────────── */
+  .container-page {
+    width: 100%;
+    max-width: 84rem;
+    margin-inline: auto;
+    padding-inline: var(--page-x);
   }
 
-  .glass-card {
-    background: rgba(19, 19, 24, 0.9);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+  .section {
+    padding-block: var(--section-y);
   }
 
+  .section-tight {
+    padding-block: clamp(4rem, 7vw, 7rem);
+  }
+
+  /* ── Structure: 1px hairlines instead of boxes ──────────── */
+  .hairline {
+    border-top: 1px solid var(--color-hairline);
+  }
+
+  .hairline-b {
+    border-bottom: 1px solid var(--color-hairline);
+  }
+
+  .hairline-strong {
+    border-color: var(--color-hairline-strong);
+  }
+
+  .v-rule {
+    border-left: 1px solid var(--color-hairline);
+  }
+
+  /* Small uppercase mono label — the connective tissue of the grid. */
+  .label {
+    font-family: var(--font-mono), monospace;
+    font-size: 0.6875rem;
+    line-height: 1.4;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--color-fg-muted);
+  }
+
+  .label-amber {
+    color: var(--color-amber);
+  }
+
+  /* Outlined display numeral (01–04 pillars, section numbers). */
+  .numeral {
+    font-family: var(--font-space-grotesk), sans-serif;
+    font-weight: 700;
+    line-height: 0.8;
+    letter-spacing: -0.04em;
+    color: transparent;
+    -webkit-text-stroke: 1px rgba(255, 255, 255, 0.28);
+  }
+
+  @supports not ((-webkit-text-stroke: 1px black)) {
+    .numeral {
+      color: rgba(255, 255, 255, 0.14);
+    }
+  }
+
+  /* ── Buttons: exactly two styles ────────────────────────── */
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.55rem;
+    background: var(--color-amber);
+    color: #0b0b0f;
+    padding: 0.95rem 1.75rem;
+    border: 0;
+    border-radius: 2px;
+    font-family: var(--font-mono), monospace;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: filter 0.25s ease, transform 0.25s ease;
+  }
+
+  .btn-primary:hover {
+    filter: brightness(1.08);
+  }
+
+  .btn-primary:active {
+    transform: scale(0.98);
+  }
+
+  .btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .btn-primary-sm {
+    padding: 0.7rem 1.2rem;
+    font-size: 0.625rem;
+  }
+
+  /* Secondary: text + arrow, underline slides in from the left. */
+  .link-arrow {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding-bottom: 3px;
+    font-family: var(--font-mono), monospace;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-fg-soft);
+    transition: color 0.25s ease;
+  }
+
+  .link-arrow::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 1px;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .link-arrow:hover,
+  .link-arrow:focus-visible {
+    color: var(--color-amber);
+  }
+
+  .link-arrow:hover::after,
+  .link-arrow:focus-visible::after {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
+
+  .link-plain {
+    color: var(--color-fg-soft);
+    transition: color 0.2s ease;
+  }
+
+  .link-plain:hover,
+  .link-plain:focus-visible {
+    color: var(--color-amber);
+  }
+
+  /* ── Form fields: underline only ────────────────────────── */
+  .field-label {
+    display: block;
+    font-family: var(--font-mono), monospace;
+    font-size: 0.6875rem;
+    line-height: 1.4;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--color-fg-muted);
+    margin-bottom: 0.35rem;
+    transition: color 0.2s ease;
+  }
+
+  .field {
+    display: block;
+    width: 100%;
+    background: transparent;
+    border: 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 0;
+    padding: 0.7rem 0;
+    color: var(--color-fg);
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    transition: border-color 0.3s ease;
+  }
+
+  .field::placeholder {
+    color: #8a8a94;
+  }
+
+  .field:hover {
+    border-bottom-color: rgba(255, 255, 255, 0.38);
+  }
+
+  /* Amber focus line is the visible focus indicator for fields. */
+  .field:focus,
+  .field:focus-visible {
+    outline: none;
+    border-bottom-color: var(--color-amber);
+  }
+
+  .field:focus-visible {
+    box-shadow: 0 1px 0 0 var(--color-amber);
+  }
+
+  .field:focus + .field-label,
+  .field:focus ~ .field-label {
+    color: var(--color-amber);
+  }
+
+  /* ── Text tab bar (amber underline on active) ───────────── */
+  .tab {
+    position: relative;
+    padding: 0.65rem 0;
+    margin-right: 1.75rem;
+    background: none;
+    border: 0;
+    font-family: var(--font-mono), monospace;
+    font-size: 0.6875rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-fg-muted);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: color 0.25s ease;
+  }
+
+  .tab:last-child {
+    margin-right: 0;
+  }
+
+  .tab:hover {
+    color: var(--color-fg);
+  }
+
+  .tab.is-active {
+    color: var(--color-fg);
+  }
+
+  .tab.is-active::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -1px;
+    height: 2px;
+    background: var(--color-amber);
+  }
+
+  /* ── Quiet list markers: dot or dash, never icon circles ── */
+  .marker-dot::before {
+    content: '';
+    display: inline-block;
+    width: 4px;
+    height: 4px;
+    margin-right: 0.75rem;
+    vertical-align: 0.2em;
+    background: var(--color-amber);
+    border-radius: 50%;
+  }
+
+  .marker-dash::before {
+    content: '';
+    display: inline-block;
+    width: 0.75rem;
+    height: 1px;
+    margin-right: 0.75rem;
+    vertical-align: 0.28em;
+    background: rgba(255, 255, 255, 0.35);
+  }
+
+  /* ── Functional status strips (not cards) ───────────────── */
+  .alert {
+    padding: 0.85rem 0 0.85rem 1rem;
+    border-left: 2px solid var(--color-amber);
+    font-size: 0.8125rem;
+    line-height: 1.6;
+    color: var(--color-fg-soft);
+  }
+
+  .alert-success {
+    border-left-color: #34d399;
+  }
+
+  .alert-error {
+    border-left-color: #f87171;
+  }
+
+  .toast {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.8rem 1.1rem;
+    background: var(--color-ink-raised);
+    border: 1px solid var(--color-hairline-strong);
+    border-radius: 2px;
+    font-family: var(--font-mono), monospace;
+    font-size: 0.75rem;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+  }
+
+  /* ── Surfaces ───────────────────────────────────────────── */
+  /* Modal-only framed surface (admin modals, lightbox, auth, toasts).
+     Page content never gets a surface. */
+  .glass-card,
   .glass-card-amber {
-    background: rgba(19, 19, 24, 0.92);
-    backdrop-filter: blur(14px);
-    -webkit-backdrop-filter: blur(14px);
-    border: 1px solid rgba(255, 177, 26, 0.35);
+    background: var(--color-ink-raised);
+    border: 1px solid var(--color-hairline-strong);
+    border-radius: 4px;
+    box-shadow: 0 32px 80px rgba(0, 0, 0, 0.6);
+    backdrop-filter: none;
   }
 
-  /* One accent, solid. No gradient text anywhere. */
+  /* Navbar: hairline + blur only once scrolled. */
+  .glass-panel {
+    background: rgba(11, 11, 15, 0.78);
+    border-bottom: 1px solid var(--color-hairline);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+  }
+
+  /* Kept as a no-op: solid amber, never gradient text. */
   .text-gradient-amber {
     color: var(--color-amber);
     -webkit-text-fill-color: var(--color-amber);
@@ -85,7 +411,7 @@
     box-shadow: none;
   }
 
-  /* Reveal on scroll (used by the Reveal client component as a no-JS-safe base). */
+  /* Reveal on scroll (no-JS-safe base). */
   [data-reveal] {
     opacity: 0;
     transform: translateY(var(--reveal-y, 24px));
@@ -100,6 +426,27 @@
     transform: none;
   }
 
+  /* Skip link */
+  .skip-link {
+    position: fixed;
+    top: 0.5rem;
+    left: 0.5rem;
+    z-index: 100;
+    transform: translateY(-200%);
+    background: var(--color-amber);
+    color: #0b0b0f;
+    padding: 0.6rem 1rem;
+    font-family: var(--font-mono), monospace;
+    font-size: 0.6875rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    transition: transform 0.25s ease;
+  }
+
+  .skip-link:focus {
+    transform: none;
+  }
+
   /* Scrub-stage overlays: CanvasScrubber writes data-edge + --local-p
      directly on the DOM every frame. No React state, no re-renders. */
   .stage-overlay {
@@ -108,33 +455,30 @@
     will-change: transform, opacity;
   }
 
-  .stage-overlay[data-edge="in"] {
+  .stage-overlay[data-edge='in'] {
     visibility: visible;
     opacity: var(--local-p, 0);
     transform: translateY(calc((1 - var(--local-p, 0)) * 22px));
   }
 
-  .stage-overlay[data-edge="hold"] {
+  .stage-overlay[data-edge='hold'] {
     visibility: visible;
     opacity: 1;
     transform: none;
   }
 
-  .stage-overlay[data-edge="out"] {
+  .stage-overlay[data-edge='out'] {
     visibility: visible;
     opacity: calc(1 - var(--local-p, 0));
     transform: translateY(calc(var(--local-p, 0) * -18px));
   }
 
-  .stage-overlay[data-edge="hidden"] {
+  .stage-overlay[data-edge='hidden'] {
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
   }
 
-  /* CanvasScrubber marks exactly one overlay data-active (paired with the
-     inert state). That overlay re-enables pointer events inside the
-     pointer-events-none stage layer; all others stay click-through. */
   .stage-overlay[data-active] {
     pointer-events: auto;
   }
@@ -147,7 +491,7 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: #0B0B0F;
+  background: #0b0b0f;
 }
 
 ::-webkit-scrollbar-thumb {
@@ -156,10 +500,14 @@
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #FFB11A;
+  background: #ffb11a;
 }
 
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
   [data-reveal] {
     opacity: 1;
     transform: none;
@@ -170,4 +518,117 @@
     transform: none !important;
     transition: none;
   }
+
+  .link-arrow::after {
+    transition: none;
+  }
+
+  .btn-primary:active {
+    transform: none;
+  }
+}
+
+/* =====================================================
+   Experience — "Zero Compromise Hardware" pinned track
+   Open panels on the dark background: no border, no
+   background, no radius. Structure = numeral + hairline.
+   ===================================================== */
+.pillar-stage {
+  height: 100svh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background-color: #0b0b0f;
+}
+
+.pillar-track {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  gap: clamp(2.5rem, 6vw, 6rem);
+  width: max-content;
+  padding: 0 clamp(1.25rem, 4vw, 3rem) 4vh;
+  will-change: transform;
+}
+
+.pillar-panel {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  width: min(78vw, 820px);
+  min-width: 400px;
+  height: min(58svh, 540px);
+  min-height: 360px;
+  opacity: 0.32;
+  transition:
+    opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity;
+}
+
+.pillar-panel[data-active='true'] {
+  opacity: 1;
+}
+
+.pillar-panel .pillar-num {
+  font-size: clamp(4.5rem, 9vw, 8.5rem);
+}
+
+.pillar-panel .pillar-spec {
+  margin-top: auto;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-hairline);
+}
+
+/* Mobile: native horizontal swipe with snap, no pin */
+@media (max-width: 767px) {
+  .pillar-stage {
+    position: static;
+    height: auto;
+    overflow: visible;
+  }
+  .pillar-track {
+    flex: 0 0 auto;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    gap: 2rem;
+  }
+  .pillar-track::-webkit-scrollbar {
+    display: none;
+  }
+  .pillar-panel {
+    min-width: 0;
+    width: 82vw;
+    height: min(58svh, 480px);
+    scroll-snap-align: center;
+    opacity: 1;
+  }
+}
+
+/* prefers-reduced-motion: vertical stack, no animation */
+[data-pillars-reduced] .pillar-stage {
+  position: static;
+  height: auto;
+  overflow: visible;
+}
+
+[data-pillars-reduced] .pillar-track {
+  flex: 0 0 auto;
+  flex-direction: column;
+  width: 100%;
+  gap: 3.5rem;
+  padding: 0 var(--page-x) 4rem;
+  max-width: 84rem;
+  margin-inline: auto;
+}
+
+[data-pillars-reduced] .pillar-panel {
+  width: 100%;
+  min-width: 0;
+  height: auto;
+  opacity: 1;
+  transition: none;
 }

@@ -5,6 +5,7 @@ import {
   deleteMaterialSafe,
   UpdateMaterialInput,
 } from '@/lib/materialsStore';
+import { verifySession, ADMIN_COOKIE_NAME } from '@/lib/auth';
 
 export async function GET(
   request: NextRequest,
@@ -44,9 +45,15 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
+    const token = request.cookies.get(ADMIN_COOKIE_NAME)?.value;
+    const { valid } = verifySession(token);
+    if (!valid) {
+      return NextResponse.json({ success: false, error: 'Unauthorized. Admin access required.' }, { status: 401 });
+    }
+
     const body = await request.json();
     
-    const { name, category, description, pricePerDay, unit, isAvailable, sortOrder } = body;
+    const { name, category, description, pricePerDay, unit, isAvailable, sortOrder, images } = body;
 
     const updateInput: UpdateMaterialInput = {};
     
@@ -57,6 +64,7 @@ export async function PUT(
     if (unit !== undefined) updateInput.unit = unit;
     if (isAvailable !== undefined) updateInput.isAvailable = isAvailable;
     if (sortOrder !== undefined) updateInput.sortOrder = sortOrder;
+    if (images !== undefined) updateInput.images = Array.isArray(images) ? images.filter((u: unknown) => typeof u === 'string' && u) : [];
 
     const material = await updateMaterialSafe(params.id, updateInput);
 
@@ -91,6 +99,12 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
+    const token = request.cookies.get(ADMIN_COOKIE_NAME)?.value;
+    const { valid } = verifySession(token);
+    if (!valid) {
+      return NextResponse.json({ success: false, error: 'Unauthorized. Admin access required.' }, { status: 401 });
+    }
+
     const success = await deleteMaterialSafe(params.id);
 
     if (!success) {

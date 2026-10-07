@@ -107,6 +107,7 @@ model Material {
   unit         String   @default("unit") // e.g. "unit", "set", "piece", "box"
   isAvailable  Boolean  @default(true)
   sortOrder    Int      @default(0)
+  images       String?  // JSON array of public photo URLs for the rental item
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -127,4 +128,3 @@ model BookingMaterial {
 
   @@unique([bookingId, materialId])
 }
-

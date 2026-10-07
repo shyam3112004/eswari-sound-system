@@ -4,6 +4,7 @@ import {
   createMaterialSafe,
   CreateMaterialInput,
 } from '@/lib/materialsStore';
+import { verifySession, ADMIN_COOKIE_NAME } from '@/lib/auth';
 
 export async function GET() {
   try {
@@ -27,9 +28,15 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
+    const token = request.cookies.get(ADMIN_COOKIE_NAME)?.value;
+    const { valid } = verifySession(token);
+    if (!valid) {
+      return NextResponse.json({ success: false, error: 'Unauthorized. Admin access required.' }, { status: 401 });
+    }
+
     const body = await request.json();
     
-    const { name, category, description, pricePerDay, unit, isAvailable, sortOrder } = body;
+    const { name, category, description, pricePerDay, unit, isAvailable, sortOrder, images } = body;
 
     if (!name || !category || !description || typeof pricePerDay !== 'number') {
       return NextResponse.json(
@@ -49,6 +56,7 @@ export async function POST(request: NextRequest) {
       unit: unit || 'unit',
       isAvailable: isAvailable ?? true,
       sortOrder: sortOrder ?? 0,
+      images: Array.isArray(images) ? images.filter((u: unknown) => typeof u === 'string' && u) : null,
     };
 
     const material = await createMaterialSafe(materialInput);

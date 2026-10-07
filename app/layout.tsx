@@ -56,8 +56,13 @@ export default function RootLayout({
       className={`${spaceGrotesk.variable} ${inter.variable} ${jetbrainsMono.variable} dark`}
     >
       <body className="bg-ink text-neutral-100 min-h-screen flex flex-col font-body antialiased selection:bg-amber selection:text-ink">
+        <a href="#main-content" className="skip-link">
+          Skip to content
+        </a>
         <Navbar />
-        <main className="flex-1 w-full pt-16">{children}</main>
+        <main id="main-content" className="flex-1 w-full pt-16">
+          {children}
+        </main>
         <Footer />
       </body>
     </html>
